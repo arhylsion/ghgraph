@@ -6,6 +6,8 @@
   <title>ghgraph — Back-dated GitHub Contribution Graph Painter</title>
   <meta name="description" content="Pure Python 3.8+ standard library tool to paint back-dated commits onto your GitHub profile heatmap. Zero dependencies, no clone required.">
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="icon" type="image/png" href="assets/ghgraph-icon.png">
+  <link rel="apple-touch-icon" href="assets/ghgraph-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -166,7 +168,7 @@
             </button>
             <span id="repoInfoPopover" class="info-popover" role="tooltip" hidden>
               <strong>Target Repository Requirement:</strong>
-              Repositori tidak boleh benar-benar kosong (0 commit). GitHub REST Git Database API membutuhkan commit awal (default branch head) sebagai referensi induk untuk membuat commit baru. Centang opsi <em>"Add a README file"</em> saat membuat repositori baru.
+              The target repository cannot be completely empty (0 commits). The GitHub REST Git Database API requires an existing initial commit (the default branch head) as a parent reference to create new commits on top of it. Check the <em>"Add a README file"</em> option when creating your repository.
             </span>
           </span>
         </p>
@@ -429,7 +431,7 @@
           </div>
           <div class="tos-text">
             <h3>Fun & Open Project</h3>
-            <p>ghgraph dibuat murni sebagai open-source fun project untuk eksplorasi visual dan merapikan kontribusi di profil GitHub secara estetik.</p>
+            <p>ghgraph is an open-source project designed for creative profile heatmap design and organizing your contribution history aesthetically.</p>
           </div>
         </div>
 
@@ -441,7 +443,7 @@
           </div>
           <div class="tos-text">
             <h3>Zero Data Collection & No Tracking</h3>
-            <p>Situs ini tidak menggunakan cookie pelacak, tidak ada analitik, tidak ada telemetry, dan tidak menyimpan data pengguna apa pun ke server luar.</p>
+            <p>This site does not use tracking cookies, analytics, or telemetry, and does not transmit or store any user data on external servers.</p>
           </div>
         </div>
 
@@ -453,8 +455,8 @@
             </svg>
           </div>
           <div class="tos-text">
-            <h3>Tanpa Akun (No Login / Register)</h3>
-            <p>Tidak ada database pendaftaran, tidak ada form login/register. Semua pengaturan dan simulasi grafis diproses 100% lokal di browser Anda.</p>
+            <h3>Zero Accounts (No Login / Register)</h3>
+            <p>There is no user database or registration system. All preview simulations and command generation run 100% client-side in your local browser.</p>
           </div>
         </div>
 
@@ -466,14 +468,14 @@
             </svg>
           </div>
           <div class="tos-text">
-            <h3>100% Eksekusi Lokal & Tanpa Injeksi Script</h3>
-            <p>Script <code>ghgraph.py</code> murni menggunakan modul bawaan Python (Standard Library) tanpa inject kode tersembunyi, tanpa background daemon, dan tanpa library <code>pip</code> tambahan. Token GitHub Anda hanya dikirim langsung dari komputer Anda ke API resmi GitHub.</p>
+            <h3>100% Local Execution & Zero Injections</h3>
+            <p>The <code>ghgraph.py</code> script uses only the standard Python library with zero hidden code, zero background daemons, and zero third-party dependencies. Your GitHub token is only transmitted directly from your machine to official GitHub API endpoints.</p>
           </div>
         </div>
       </div>
 
       <div class="tos-footer">
-        <button id="ackTosBtn" class="tos-ack-btn" type="button">Saya Mengerti</button>
+        <button id="ackTosBtn" class="tos-ack-btn" type="button">Got It</button>
       </div>
     </div>
   </div>
