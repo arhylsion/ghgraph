@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ghgraph — Back-dated GitHub Contribution Graph Painter</title>
+  <meta name="description" content="Pure Python 3.8+ standard library tool to paint back-dated commits onto your GitHub profile heatmap. Zero dependencies, no clone required.">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-container">
+    <header class="site-header">
+      <a href="#" class="brand-link">
+        <img src="assets/icon.svg" alt="ghgraph icon" class="brand-icon" width="22" height="22">
+        <span class="brand-name">ghgraph</span>
+      </a>
+
+      <nav class="header-nav">
+        <div class="nav-links">
+          <a href="#quickstart" class="nav-item">Quickstart</a>
+          <a href="#examples" class="nav-item">Examples</a>
+          <a href="#reference" class="nav-item">Options</a>
+          <a href="#troubleshooting" class="nav-item">Rules</a>
+          <button id="openTosBtn" class="nav-item tos-nav-btn" type="button">Disclaimer</button>
+        </div>
+
+        <div class="nav-actions">
+          <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub Repository" title="GitHub Repository">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
+
+          <button id="themeToggle" class="icon-link theme-btn" aria-label="Toggle color theme" title="Toggle theme">
+            <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro-section">
+        <h1 class="page-title">Paint your GitHub contribution graph.</h1>
+        <p class="page-lede">
+          A pure Python 3.8+ standard library tool for back-dating commits onto your GitHub profile heatmap. Direct GitHub Git Database API execution with zero repository clones, or fast local commits via git CLI.
+        </p>
+      </section>
+
+      <section class="github-graph-section">
+        <div class="github-calendar-box">
+          <div class="calendar-scroll-wrap">
+            <div id="monthAxis" class="month-axis">
+              <span class="m-label" style="grid-column: 1">Jan</span>
+              <span class="m-label" style="grid-column: 5">Feb</span>
+              <span class="m-label" style="grid-column: 9">Mar</span>
+              <span class="m-label" style="grid-column: 14">Apr</span>
+              <span class="m-label" style="grid-column: 18">May</span>
+              <span class="m-label" style="grid-column: 22">Jun</span>
+              <span class="m-label" style="grid-column: 27">Jul</span>
+              <span class="m-label" style="grid-column: 31">Aug</span>
+              <span class="m-label" style="grid-column: 36">Sep</span>
+              <span class="m-label" style="grid-column: 40">Oct</span>
+              <span class="m-label" style="grid-column: 44">Nov</span>
+              <span class="m-label" style="grid-column: 49">Dec</span>
+            </div>
+
+            <div class="calendar-grid-body">
+              <div class="weekday-labels">
+                <span class="w-label"></span>
+                <span class="w-label">Mon</span>
+                <span class="w-label"></span>
+                <span class="w-label">Wed</span>
+                <span class="w-label"></span>
+                <span class="w-label">Fri</span>
+                <span class="w-label"></span>
+              </div>
+
+              <div id="gridCanvas" class="calendar-grid" role="region" aria-label="Interactive contribution graph">
+              </div>
+            </div>
+          </div>
+
+          <div class="github-calendar-footer">
+            <a href="#shading" class="contrib-guide-link">Learn how we count contributions</a>
+
+            <span id="statsCounter" class="calendar-stats">438 contributions · 73 active days</span>
+
+            <div class="legend-wrap">
+              <span class="legend-text">Less</span>
+              <div class="legend-cells">
+                <span class="legend-cell level-0"></span>
+                <span class="legend-cell level-1"></span>
+                <span class="legend-cell level-2"></span>
+                <span class="legend-cell level-3"></span>
+                <span class="legend-cell level-4"></span>
+              </div>
+              <span class="legend-text">More</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-terminal-block live-terminal">
+          <div class="terminal-content">
+            <span class="terminal-prompt">$</span>
+            <code id="commandOutput">python ghgraph.py --repo user/activity --spread "2024-06-02..2025-05-31:142"</code>
+          </div>
+          <div class="terminal-actions">
+            <button id="clearGridBtn" class="terminal-action-btn" aria-label="Clear all cells" title="Clear all cells">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+            <button id="copyLiveCmdBtn" class="terminal-action-btn copy-btn" aria-label="Copy command" title="Copy to clipboard">
+              <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="prose-section">
+        <h2>Before you begin</h2>
+        <ul>
+          <li><strong>The profile heatmap covers the last 365 days only.</strong> Commits dated in 2020 will not change today's grid squares; they appear under <em>Contribution activity</em> on your profile for that calendar year.</li>
+          <li><strong>Back-dating is additive.</strong> The script creates new commits on top of your default branch head; it never deletes history, overwrites existing commits, or resets your repository.</li>
+          <li><strong>Use a dedicated repository</strong> (e.g. <code>username/activity</code>). Do not spam commits into a repository with active GitHub Actions workflows.</li>
+        </ul>
+      </section>
+
+      <section id="quickstart" class="prose-section">
+        <h2>Setup & Installation</h2>
+
+        <p class="repo-req-text">
+          Target repository must have at least one initial commit (e.g. <code>README.md</code>)
+          <span class="info-trigger-wrap">
+            <button id="repoInfoBtn" class="info-icon-btn" type="button" aria-label="Repository requirement info" title="Why is a file required?">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </button>
+            <span id="repoInfoPopover" class="info-popover" role="tooltip" hidden>
+              <strong>Target Repository Requirement:</strong>
+              Repositori tidak boleh benar-benar kosong (0 commit). GitHub REST Git Database API membutuhkan commit awal (default branch head) sebagai referensi induk untuk membuat commit baru. Centang opsi <em>"Add a README file"</em> saat membuat repositori baru.
+            </span>
+          </span>
+        </p>
+
+        <div class="os-switcher-wrap">
+          <div class="os-pills" role="tablist" aria-label="Select Operating System">
+            <button class="os-pill active" data-os="windows" role="tab" aria-selected="true" type="button">Windows</button>
+            <button class="os-pill" data-os="unix" role="tab" aria-selected="false" type="button">macOS / Linux</button>
+          </div>
+        </div>
+
+        <p>Download the atomic script directly:</p>
+
+        <div class="code-terminal-block">
+          <pre><code id="downloadCmd">curl.exe -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <p>Export your Personal Access Token:</p>
+
+        <div class="code-terminal-block">
+          <pre><code id="tokenCmd">$env:GITHUB_TOKEN = "ghp_your_token_here"</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section id="examples" class="prose-section">
+        <h2>Examples</h2>
+        <p>You can preview any plan before touching GitHub by adding the <code>--dry-run</code> flag.</p>
+
+        <h3>1. Natural activity spread</h3>
+        <p>Distribute 40 commits across June–December 2024, and 80 commits across 2025 with organic weekday weighting:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --repo user/activity --spread "2024-06-01..2024-12-31:40, 2025-01-01..2025-12-31:80"</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <h3>2. Fill empty days only</h3>
+        <p>Skip dates that already have contributions by querying your contribution calendar with GraphQL:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --repo user/activity --spread "2025-01-01..2025-12-31:80" --only-empty</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <h3>3. Full year fill</h3>
+        <p>Generate 2 commits every weekday of 2020:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --repo user/activity --year 2020 --per-day 2 --skip-weekends</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <h3>4. Specific dates</h3>
+        <p>Pin explicit commit counts on individual days:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --repo user/activity --dates "2020-05-04:5, 2020-05-06:2"</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <h3>5. 5×7 Text banner</h3>
+        <p>Render a text banner starting from a specific Sunday:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --repo user/activity --text "HELLO" --start 2020-03-01</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+
+        <h3>6. Local git repository backend</h3>
+        <p>Create empty commits in a local checkout and push in a single git command instead of making HTTP requests:</p>
+        <div class="code-terminal-block">
+          <pre><code>python ghgraph.py --backend git --path C:\code\activity --dates "2020-05-04:3"</code></pre>
+          <button class="terminal-copy-btn" aria-label="Copy code" title="Copy to clipboard">
+            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section id="shading" class="prose-section">
+        <h2>How GitHub Shading Works</h2>
+        <p>
+          GitHub does not map fixed numbers of commits to fixed shades of green. The four shades are quantiles calculated relative to your busiest day in that rolling calendar period.
+        </p>
+        <p>
+          If your busiest day has only 1 commit, all active days will render in the lightest shade. To ensure visual contrast for text banners and pixel patterns, use <code>--scale 2.0</code> to raise the upper commit counts.
+        </p>
+      </section>
+
+      <section id="reference" class="prose-section">
+        <h2>Command Line Reference</h2>
+        <div class="table-container">
+          <table class="reference-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>--repo OWNER/NAME</code></td>
+                <td>—</td>
+                <td>Target GitHub repository for the API backend.</td>
+              </tr>
+              <tr>
+                <td><code>--token TOKEN</code></td>
+                <td><code>$GITHUB_TOKEN</code></td>
+                <td>Personal Access Token with repository write permissions.</td>
+              </tr>
+              <tr>
+                <td><code>--backend {api,git}</code></td>
+                <td><code>api</code></td>
+                <td>Use <code>api</code> (no clone) or <code>git</code> (local repository).</td>
+              </tr>
+              <tr>
+                <td><code>--path PATH</code></td>
+                <td><code>.</code></td>
+                <td>Local clone directory when using <code>--backend git</code>.</td>
+              </tr>
+              <tr>
+                <td><code>--spread "S..E:N"</code></td>
+                <td>—</td>
+                <td>Distribute N commits randomly across the specified date range.</td>
+              </tr>
+              <tr>
+                <td><code>--year YEAR</code></td>
+                <td>—</td>
+                <td>Fill all days of a calendar year (e.g. <code>2020</code>).</td>
+              </tr>
+              <tr>
+                <td><code>--range START..END</code></td>
+                <td>—</td>
+                <td>Date interval to populate (e.g. <code>2020-01-01..2020-06-30</code>).</td>
+              </tr>
+              <tr>
+                <td><code>--dates "D:N,..."</code></td>
+                <td>—</td>
+                <td>Exact days with commit counts (e.g. <code>2020-05-04:3</code>).</td>
+              </tr>
+              <tr>
+                <td><code>--text "..."</code></td>
+                <td>—</td>
+                <td>5×7 pixel text banner (A–Z, 0–9).</td>
+              </tr>
+              <tr>
+                <td><code>--pattern FILE</code></td>
+                <td>—</td>
+                <td>Custom 7-line art file (Sunday to Saturday).</td>
+              </tr>
+              <tr>
+                <td><code>--per-day N</code></td>
+                <td><code>1</code></td>
+                <td>Commits per day for <code>--range</code> and <code>--year</code>.</td>
+              </tr>
+              <tr>
+                <td><code>--skip-weekends</code></td>
+                <td><code>false</code></td>
+                <td>Exclude Saturdays and Sundays from commit schedules.</td>
+              </tr>
+              <tr>
+                <td><code>--only-empty</code></td>
+                <td><code>false</code></td>
+                <td>Skip days that already have contributions via GraphQL query.</td>
+              </tr>
+              <tr>
+                <td><code>--hour N</code></td>
+                <td><code>12</code></td>
+                <td>Hour of day for commits (0 to 23).</td>
+              </tr>
+              <tr>
+                <td><code>--jitter N</code></td>
+                <td><code>30</code></td>
+                <td>Random time variance in minutes around the specified hour.</td>
+              </tr>
+              <tr>
+                <td><code>--tz OFFSET</code></td>
+                <td><code>+00:00</code></td>
+                <td>Timezone offset for commit timestamps (e.g. <code>+07:00</code>).</td>
+              </tr>
+              <tr>
+                <td><code>--dry-run</code></td>
+                <td><code>false</code></td>
+                <td>Preview scheduled commits in terminal without sending data.</td>
+              </tr>
+              <tr>
+                <td><code>-y, --yes</code></td>
+                <td><code>false</code></td>
+                <td>Skip the interactive confirmation prompt.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="troubleshooting" class="prose-section">
+        <h2>Why a commit might not appear</h2>
+        <p>If commits are pushed successfully but do not appear on your profile graph, check the following criteria:</p>
+        <ol class="troubleshooting-list">
+          <li><strong>Default branch:</strong> Commits only count toward your graph if they are on the repository's default branch (or <code>gh-pages</code>).</li>
+          <li><strong>Author email:</strong> The commit author email must match an email address linked and verified on your GitHub account. The script defaults to your GitHub <code>id+username@users.noreply.github.com</code> address.</li>
+          <li><strong>Forks are excluded:</strong> GitHub does not count contributions made to repository forks. The repository must be standalone.</li>
+          <li><strong>Private contributions setting:</strong> If the repository is private, enable <em>"Include private contributions on my profile"</em> in your profile settings.</li>
+          <li><strong>Future dates:</strong> GitHub ignores commits with timestamps in the future. The script automatically skips future dates.</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-meta">
+        <span>ghgraph · Open source under MIT License</span>
+        <div class="footer-links">
+          <button id="openTosFooterBtn" class="footer-tos-link" type="button">Terms & Privacy Disclaimer</button>
+          <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer">github.com/arhylsion/ghgraph</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="tosDrawer" class="tos-backdrop" role="dialog" aria-modal="true" aria-labelledby="tosTitle" hidden>
+    <div class="tos-card">
+      <div class="tos-header">
+        <div class="tos-title-group">
+          <span class="tos-pill">Transparency & Security</span>
+          <h2 id="tosTitle" class="tos-heading">Terms & Privacy Disclaimer</h2>
+        </div>
+        <button id="closeTosBtn" class="tos-close-btn" aria-label="Close disclaimer" title="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="tos-content">
+        <div class="tos-item">
+          <div class="tos-icon-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="tos-text">
+            <h3>Fun & Open Project</h3>
+            <p>ghgraph dibuat murni sebagai open-source fun project untuk eksplorasi visual dan merapikan kontribusi di profil GitHub secara estetik.</p>
+          </div>
+        </div>
+
+        <div class="tos-item">
+          <div class="tos-icon-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="tos-text">
+            <h3>Zero Data Collection & No Tracking</h3>
+            <p>Situs ini tidak menggunakan cookie pelacak, tidak ada analitik, tidak ada telemetry, dan tidak menyimpan data pengguna apa pun ke server luar.</p>
+          </div>
+        </div>
+
+        <div class="tos-item">
+          <div class="tos-icon-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div class="tos-text">
+            <h3>Tanpa Akun (No Login / Register)</h3>
+            <p>Tidak ada database pendaftaran, tidak ada form login/register. Semua pengaturan dan simulasi grafis diproses 100% lokal di browser Anda.</p>
+          </div>
+        </div>
+
+        <div class="tos-item">
+          <div class="tos-icon-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <div class="tos-text">
+            <h3>100% Eksekusi Lokal & Tanpa Injeksi Script</h3>
+            <p>Script <code>ghgraph.py</code> murni menggunakan modul bawaan Python (Standard Library) tanpa inject kode tersembunyi, tanpa background daemon, dan tanpa library <code>pip</code> tambahan. Token GitHub Anda hanya dikirim langsung dari komputer Anda ke API resmi GitHub.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tos-footer">
+        <button id="ackTosBtn" class="tos-ack-btn" type="button">Saya Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
