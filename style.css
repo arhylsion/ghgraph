@@ -730,6 +730,10 @@ pre::-webkit-scrollbar-thumb:hover,
   padding: 0;
 }
 
+.info-icon-btn svg {
+  pointer-events: none;
+}
+
 .info-icon-btn:hover {
   background-color: var(--bg-surface);
   border-color: var(--accent);
@@ -1349,7 +1353,17 @@ pre::-webkit-scrollbar-thumb:hover,
 }
 
 .workflow-info-backdrop {
-  z-index: 1050;
+  z-index: 1100 !important;
+}
+
+.workflow-info-backdrop[hidden] {
+  display: none !important;
+}
+
+.workflow-info-backdrop:not([hidden]) {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .workflow-info-card {

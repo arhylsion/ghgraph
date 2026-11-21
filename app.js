@@ -1225,30 +1225,45 @@ jobs:
     }
   }
 
-  function openWorkflowInfoModal() {
-    if (workflowInfoModal) {
-      workflowInfoModal.removeAttribute('hidden');
+  function openWorkflowInfoModal(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const modal = document.getElementById('workflowInfoModal');
+    if (modal) {
+      modal.removeAttribute('hidden');
     }
   }
 
-  function closeWorkflowInfoModal() {
-    if (workflowInfoModal) {
-      workflowInfoModal.setAttribute('hidden', '');
+  function closeWorkflowInfoModal(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const modal = document.getElementById('workflowInfoModal');
+    if (modal) {
+      modal.setAttribute('hidden', '');
     }
   }
 
   function initProfileStudio() {
     if (openStudioBtn) openStudioBtn.addEventListener('click', openStudioModal);
     if (closeStudioBtn) closeStudioBtn.addEventListener('click', closeStudioModal);
-    if (workflowInfoBtn) workflowInfoBtn.addEventListener('click', openWorkflowInfoModal);
-    if (closeWorkflowInfoBtn) closeWorkflowInfoBtn.addEventListener('click', closeWorkflowInfoModal);
-    if (ackWorkflowInfoBtn) ackWorkflowInfoBtn.addEventListener('click', closeWorkflowInfoModal);
 
-    if (workflowInfoModal) {
-      workflowInfoModal.addEventListener('click', (e) => {
-        if (e.target === workflowInfoModal) closeWorkflowInfoModal();
-      });
-    }
+    document.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('#workflowInfoBtn')) {
+        openWorkflowInfoModal(e);
+        return;
+      }
+      if (e.target.closest && (e.target.closest('#closeWorkflowInfoBtn') || e.target.closest('#ackWorkflowInfoBtn'))) {
+        closeWorkflowInfoModal(e);
+        return;
+      }
+      if (workflowInfoModal && e.target === workflowInfoModal) {
+        closeWorkflowInfoModal(e);
+      }
+    });
 
     if (profileStudioModal) {
       profileStudioModal.addEventListener('click', (e) => {
