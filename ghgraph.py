@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import random
@@ -681,6 +682,302 @@ def fetch_occupied_days(api: GitHubAPI, login: str, years: list[int]) -> set[dat
     return occupied
 
 
+CARD_CONTRIBUTION_QUERY = """
+query($login: String!, $from: DateTime!, $to: DateTime!) {
+  user(login: $login) {
+    contributionsCollection(from: $from, to: $to) {
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            date
+            contributionCount
+            contributionLevel
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+GRAPHQL_LEVEL_MAP = {
+    "NONE": 0,
+    "FIRST_QUARTILE": 1,
+    "SECOND_QUARTILE": 2,
+    "THIRD_QUARTILE": 3,
+    "FOURTH_QUARTILE": 4,
+}
+
+MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def fetch_calendar_via_graphql(api: GitHubAPI, login: str) -> tuple[list[list[int]], list[tuple[str, int]], int, int]:
+    """Fetch the rolling 52-week contribution calendar using GitHub GraphQL API."""
+    now = datetime.now(timezone.utc)
+    from_time = now - timedelta(days=364)
+
+    result = api.graphql(
+        CARD_CONTRIBUTION_QUERY,
+        {
+            "login": login,
+            "from": from_time.isoformat().replace("+00:00", "Z"),
+            "to": now.isoformat().replace("+00:00", "Z"),
+        },
+    )
+    user = result.get("user")
+    if not user:
+        raise SystemExit(f"could not read the contribution calendar of {login!r}")
+
+    cal = user["contributionsCollection"]["contributionCalendar"]
+    total_contributions = int(cal.get("totalContributions", 0))
+    raw_weeks = cal.get("weeks", [])[-52:]
+
+    grid: list[list[int]] = [[0] * 7 for _ in range(52)]
+    month_labels: list[tuple[str, int]] = []
+    seen_months: set[tuple[int, int]] = set()
+    active_days = 0
+
+    col_offset = max(0, 52 - len(raw_weeks))
+    for w_idx, week in enumerate(raw_weeks):
+        col = col_offset + w_idx
+        if col >= 52:
+            break
+        days = week.get("contributionDays", [])
+        for d_idx, day in enumerate(days[:7]):
+            cnt = int(day.get("contributionCount", 0))
+            lvl = GRAPHQL_LEVEL_MAP.get(day.get("contributionLevel", "NONE"), count_to_shade_level(cnt))
+            grid[col][d_idx] = lvl
+            if cnt > 0:
+                active_days += 1
+            if d_idx == 0:
+                d_obj = date.fromisoformat(day["date"])
+                key = (d_obj.year, d_obj.month)
+                if key not in seen_months:
+                    seen_months.add(key)
+                    if not month_labels or col - month_labels[-1][1] >= 3:
+                        month_labels.append((MONTH_NAMES[d_obj.month - 1], col))
+
+    return grid, month_labels, total_contributions, active_days
+
+
+def fetch_calendar_via_public_html(login: str) -> tuple[list[list[int]], list[tuple[str, int]], int, int]:
+    """Fallback to GitHub public contributions endpoint when no token is provided."""
+    url = f"https://github.com/users/{login}/contributions"
+    req = urllib.request.Request(url, headers={"User-Agent": "ghgraph"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = resp.read().decode("utf-8", "replace")
+    except (urllib.error.HTTPError, urllib.error.URLError) as exc:
+        raise SystemExit(f"Failed to fetch public contributions for {login!r}: {exc}")
+
+    day_entries = re.findall(r'data-date="(\d{4}-\d{2}-\d{2})"[^>]*data-level="([0-4])"', body)
+    if not day_entries:
+        day_entries = re.findall(r'data-level="([0-4])"[^>]*data-date="(\d{4}-\d{2}-\d{2})"', body)
+        day_entries = [(d, l) for l, d in day_entries]
+
+    if not day_entries:
+        raise SystemExit(f"No contribution calendar cells found for {login!r}")
+
+    day_map: dict[date, int] = {}
+    for d_str, lvl_str in day_entries:
+        day_map[date.fromisoformat(d_str)] = int(lvl_str)
+
+    sorted_dates = sorted(day_map.keys())
+    end_date = sorted_dates[-1]
+    start_sunday = get_sunday_before(end_date) - timedelta(days=7 * 51)
+
+    grid: list[list[int]] = [[0] * 7 for _ in range(52)]
+    month_labels: list[tuple[str, int]] = []
+    seen_months: set[tuple[int, int]] = set()
+    active_days = 0
+
+    for c in range(52):
+        for r in range(7):
+            d_obj = start_sunday + timedelta(days=c * 7 + r)
+            lvl = day_map.get(d_obj, 0)
+            grid[c][r] = lvl
+            if lvl > 0:
+                active_days += 1
+            if r == 0:
+                key = (d_obj.year, d_obj.month)
+                if key not in seen_months:
+                    seen_months.add(key)
+                    if not month_labels or c - month_labels[-1][1] >= 3:
+                        month_labels.append((MONTH_NAMES[d_obj.month - 1], c))
+
+    total_match = re.search(r"([\d,]+)\s+contributions?\s+in\s+the\s+last\s+year", body, re.IGNORECASE)
+    if total_match:
+        total_contributions = int(total_match.group(1).replace(",", ""))
+    else:
+        total_contributions = sum(LEVEL_COUNTS.get(grid[c][r], 0) for c in range(52) for r in range(7))
+
+    return grid, month_labels, total_contributions, active_days
+
+
+def render_svg_card(
+    username: str,
+    grid: list[list[int]],
+    month_labels: list[tuple[str, int]],
+    total_commits: int,
+    active_days: int,
+    theme: str = "dark",
+    show_stats: bool = True,
+) -> str:
+    """Render an animated M3 Expressive pastel SVG contribution heatmap card."""
+    clean_user = html.escape((username or "").strip() or "username")
+    is_dark = theme == "dark"
+    h = 204 if show_stats else 166
+
+    bg = "#1a181c" if is_dark else "#ffffff"
+    border = "rgba(206, 196, 207, 0.12)" if is_dark else "rgba(78, 68, 82, 0.14)"
+    text = "#ebe4eb" if is_dark else "#1d1a20"
+    text_dim = "#9a919c" if is_dark else "#7d7281"
+    accent = "#d9b9ff" if is_dark else "#6e4d8e"
+    accent_container = "#533571" if is_dark else "#efddff"
+    on_accent_container = "#efddff" if is_dark else "#270747"
+    cell_border = "rgba(255, 255, 255, 0.05)" if is_dark else "rgba(0, 0, 0, 0.05)"
+
+    cell_colors = (
+        {0: "#211e23", 1: "#1c382b", 2: "#2d6248", 3: "#50b57e", 4: "#8af2b3"}
+        if is_dark
+        else {0: "#ede7f0", 1: "#a8e6be", 2: "#60ce8a", 3: "#37ad66", 4: "#1d7e44"}
+    )
+
+    start_x = 56.0
+    start_y = 66.0
+    step = 14.5
+    cell_size = 11
+
+    cells_parts: list[str] = []
+    for c in range(52):
+        fade_delay = f"{c * 0.018:.3f}s"
+        shimmer_delay = f"{1.2 + c * 0.055:.3f}s"
+        for r in range(7):
+            lvl = grid[c][r]
+            x = f"{start_x + c * step:.1f}"
+            y = f"{start_y + r * step:.1f}"
+            color = cell_colors.get(lvl, cell_colors[0])
+            if lvl > 0:
+                cls = "cell-active"
+                delay_style = f"animation-delay:{fade_delay},{shimmer_delay};"
+            else:
+                cls = "cell"
+                delay_style = f"animation-delay:{fade_delay};"
+            cells_parts.append(
+                f'<rect class="{cls}" x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" '
+                f'rx="2.5" fill="{color}" stroke="{cell_border}" stroke-width="0.7" style="{delay_style}"/>'
+            )
+
+    months_parts: list[str] = []
+    for name, col in month_labels:
+        x = f"{start_x + col * step:.1f}"
+        months_parts.append(
+            f'<text x="{x}" y="52" font-family="\'Outfit\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif" '
+            f'font-size="10" font-weight="500" fill="{text_dim}">{name}</text>'
+        )
+
+    weekdays_parts: list[str] = []
+    for name, row in (("Mon", 1), ("Wed", 3), ("Fri", 5)):
+        y = f"{start_y + row * step + 9:.1f}"
+        weekdays_parts.append(
+            f'<text x="28" y="{y}" font-family="\'Outfit\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif" '
+            f'font-size="10" font-weight="500" fill="{text_dim}">{name}</text>'
+        )
+
+    legend_y = 186 if show_stats else 150
+    stats_text = (
+        f'<text x="28" y="0" font-family="\'JetBrains Mono\', monospace" font-size="11" font-weight="500" '
+        f'fill="{accent}">{total_commits} contributions \u00b7 {active_days} active days</text>'
+        if show_stats
+        else ""
+    )
+
+    footer_svg = f"""  <g transform="translate(0, {legend_y})">
+    {stats_text}
+    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="{text_dim}">Less</text>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="{cell_colors[0]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="{cell_colors[1]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="{cell_colors[2]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="{cell_colors[3]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="{cell_colors[4]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="{text_dim}">More</text>
+  </g>"""
+
+    style_block = """  <style>
+    .ghgraph-badge-link { cursor: pointer; text-decoration: none; }
+    .ghgraph-badge-link:hover rect { opacity: 0.85; }
+    .cell { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    .cell-active { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards, shimmerWave 6s ease-in-out infinite; }
+    @keyframes cellFadeIn { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
+    @keyframes shimmerWave { 0%, 82%, 100% { filter: brightness(1); } 90% { filter: brightness(1.38); } }
+  </style>"""
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 {h}" width="820" height="{h}" fill="none">
+{style_block}
+  <rect width="820" height="{h}" rx="14" fill="{bg}" stroke="{border}" stroke-width="1"/>
+  <text x="28" y="33" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="{text}">@{clean_user}</text>
+  <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer" class="ghgraph-badge-link">
+    <g transform="translate(726, 17)">
+      <rect width="66" height="22" rx="11" fill="{accent_container}"/>
+      <text x="33" y="15" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="{on_accent_container}">ghgraph</text>
+    </g>
+  </a>
+  {''.join(months_parts)}
+  {''.join(weekdays_parts)}
+  <g>{''.join(cells_parts)}</g>
+{footer_svg}
+</svg>
+"""
+
+
+def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
+    """Fetch contribution calendar and write animated SVG card(s) to disk."""
+    username = args.username
+    if not username and args.repo and "/" in args.repo:
+        username = args.repo.split("/", 1)[0]
+
+    api: GitHubAPI | None = None
+    if token:
+        api = GitHubAPI(token)
+        if not username:
+            try:
+                username = api.request("GET", "/user")["login"]
+            except SystemExit:
+                username = None
+
+    if not username:
+        print("Provide --username USER (or --repo USER/REPO) when using --card.", file=sys.stderr)
+        return 2
+
+    if api is not None:
+        try:
+            grid, month_labels, total_commits, active_days = fetch_calendar_via_graphql(api, username)
+        except SystemExit:
+            grid, month_labels, total_commits, active_days = fetch_calendar_via_public_html(username)
+    else:
+        grid, month_labels, total_commits, active_days = fetch_calendar_via_public_html(username)
+
+    show_stats = not args.no_stats
+    out_path = Path(args.output or "assets")
+    themes = ["dark", "light"] if args.theme == "both" else [args.theme]
+
+    if len(themes) == 1 and out_path.suffix.lower() == ".svg":
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, themes[0], show_stats)
+        out_path.write_text(svg_text, encoding="utf-8")
+        print(f"generated {out_path} ({total_commits} contributions, {active_days} active days)")
+    else:
+        out_path.mkdir(parents=True, exist_ok=True)
+        for t in themes:
+            target = out_path / f"ghgraph-{t}.svg"
+            svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, t, show_stats)
+            target.write_text(svg_text, encoding="utf-8")
+            print(f"generated {target} ({total_commits} contributions, {active_days} active days)")
+
+    return 0
+
+
 def resolve_author_identity(
     api: GitHubAPI,
     name_arg: str | None,
@@ -869,6 +1166,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--start", type=date.fromisoformat, metavar="YYYY-MM-DD",
                    help="first column of --text/--pattern, snapped to Sunday")
 
+    p.add_argument("--card", action="store_true",
+                   help="generate animated M3 SVG contribution card(s) for Profile README")
+    p.add_argument("--username", help="GitHub username for --card (default: inferred from --repo or token)")
+    p.add_argument("--theme", choices=["dark", "light", "both"], default="both",
+                   help="card theme for --card (default: both)")
+    p.add_argument("--output", default="assets",
+                   help="output directory or .svg file path for --card (default: assets)")
+    p.add_argument("--no-stats", action="store_true",
+                   help="hide summary stats bar on generated --card SVG")
+
     p.add_argument("--dry-run", action="store_true", help="print the plan, touch nothing")
     p.add_argument("-y", "--yes", action="store_true", help="skip the confirmation prompt")
     return p
@@ -889,6 +1196,9 @@ def main(argv: list[str] | None = None) -> int:
     tz = parse_tz(args.tz)
     rng = random.Random(args.seed)
     token = args.token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+
+    if args.card:
+        return execute_card_generation(args, token)
 
     blocked_dates: set[date] = set()
     if args.only_empty:

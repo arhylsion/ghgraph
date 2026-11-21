@@ -425,6 +425,9 @@
     });
   }
 
+  const profileStudioModal = document.getElementById('profileStudioModal');
+  const openStudioBtn = document.getElementById('openStudioBtn');
+  const closeStudioBtn = document.getElementById('closeStudioBtn');
   const studioUsername = document.getElementById('studioUsername');
   const studioThemePills = document.getElementById('studioThemePills');
   const studioModePills = document.getElementById('studioModePills');
@@ -433,14 +436,25 @@
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
   const workflowYamlOutput = document.getElementById('workflowYamlOutput');
   const workflowPanel = document.getElementById('workflowPanel');
-  const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+  const staticNotePanel = document.getElementById('staticNotePanel');
+  const downloadDarkSvgBtn = document.getElementById('downloadDarkSvgBtn');
+  const downloadLightSvgBtn = document.getElementById('downloadLightSvgBtn');
   const copySvgRawBtn = document.getElementById('copySvgRawBtn');
 
   let currentStudioTheme = 'dark';
   let currentStudioMode = 'action';
 
+  function escapeXml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function buildProfileCardSvg(username, theme, showStats) {
-    const cleanUser = (username || '').trim() || 'username';
+    const cleanUser = escapeXml((username || '').trim() || 'username');
     const isDark = theme === 'dark';
     const h = showStats ? 204 : 166;
 
@@ -467,6 +481,8 @@
     const cellSize = 11;
 
     for (let c = 0; c < WEEKS; c++) {
+      const fadeDelay = (c * 0.018).toFixed(3);
+      const shimmerDelay = (1.2 + c * 0.055).toFixed(3);
       for (let r = 0; r < DAYS; r++) {
         const lvl = grid[c][r];
         if (lvl > 0) {
@@ -476,7 +492,11 @@
         const x = (startX + c * step).toFixed(1);
         const y = (startY + r * step).toFixed(1);
         const color = cellColors[lvl];
-        cellsSvg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" fill="${color}" stroke="${cellBorder}" stroke-width="0.7"/>`;
+        const cls = lvl > 0 ? 'cell-active' : 'cell';
+        const delayStyle = lvl > 0
+          ? `animation-delay:${fadeDelay}s,${shimmerDelay}s;`
+          : `animation-delay:${fadeDelay}s;`;
+        cellsSvg += `<rect class="${cls}" x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" fill="${color}" stroke="${cellBorder}" stroke-width="0.7" style="${delayStyle}"/>`;
       }
     }
 
@@ -490,7 +510,7 @@
     let monthsSvg = '';
     monthCols.forEach(m => {
       const x = (startX + m.col * step).toFixed(1);
-      monthsSvg += `<text x="${x}" y="50" font-family="'Outfit', -apple-system, sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
+      monthsSvg += `<text x="${x}" y="52" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
     });
 
     const weekdays = [
@@ -502,42 +522,45 @@
     let weekdaysSvg = '';
     weekdays.forEach(w => {
       const y = (startY + w.row * step + 9).toFixed(1);
-      weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, sans-serif" font-size="10" font-weight="500" fill="${textDim}">${w.name}</text>`;
+      weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${w.name}</text>`;
     });
 
-    let footerSvg = '';
-    if (showStats) {
-      footerSvg = `
-  <g transform="translate(0, 186)">
-    <text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${accent}">${totalCommits} contributions · ${activeDays} active days</text>
-    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">Less</text>
+    const legendY = showStats ? 186 : 150;
+    const statsSvg = showStats
+      ? `<text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${accent}">${totalCommits} contributions · ${activeDays} active days</text>`
+      : '';
+
+    const footerSvg = `
+  <g transform="translate(0, ${legendY})">
+    ${statsSvg}
+    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">Less</text>
     <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${cellBorder}" stroke-width="0.5"/>
     <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="${cellBorder}" stroke-width="0.5"/>
     <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="${cellBorder}" stroke-width="0.5"/>
     <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="${cellBorder}" stroke-width="0.5"/>
     <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <text x="768" y="0" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">More</text>
+    <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">More</text>
   </g>`;
-    } else {
-      footerSvg = `
-  <g transform="translate(0, 150)">
-    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">Less</text>
-    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <text x="768" y="0" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">More</text>
-  </g>`;
-    }
+
+    const styleBlock = `  <style>
+    .ghgraph-badge-link { cursor: pointer; text-decoration: none; }
+    .ghgraph-badge-link:hover rect { opacity: 0.85; }
+    .cell { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    .cell-active { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards, shimmerWave 6s ease-in-out infinite; }
+    @keyframes cellFadeIn { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
+    @keyframes shimmerWave { 0%, 82%, 100% { filter: brightness(1); } 90% { filter: brightness(1.38); } }
+  </style>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+${styleBlock}
   <rect width="820" height="${h}" rx="14" fill="${bg}" stroke="${border}" stroke-width="1"/>
-  <text x="28" y="32" font-family="'Outfit', -apple-system, sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
-  <g transform="translate(738, 16)">
-    <rect width="54" height="20" rx="10" fill="${accentContainer}"/>
-    <text x="27" y="14" text-anchor="middle" font-family="'Outfit', -apple-system, sans-serif" font-size="11" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
-  </g>
+  <text x="28" y="33" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
+  <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer" class="ghgraph-badge-link">
+    <g transform="translate(726, 17)">
+      <rect width="66" height="22" rx="11" fill="${accentContainer}"/>
+      <text x="33" y="15" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
+    </g>
+  </a>
   ${monthsSvg}
   ${weekdaysSvg}
   <g>${cellsSvg}</g>
@@ -554,15 +577,17 @@
 
     if (readmeSnippetOutput) {
       const u = username.trim() || 'username';
-      readmeSnippetOutput.textContent = `<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-light.svg">
-  <img alt="${u}'s Contribution Heatmap" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
-</picture>`;
+      readmeSnippetOutput.textContent = `<a href="https://github.com/arhylsion/ghgraph">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-light.svg">
+    <img alt="${u}'s Contribution Heatmap" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
+  </picture>
+</a>`;
     }
 
     if (workflowYamlOutput) {
-      const u = username.trim() || 'username';
+      const statsFlag = showStats ? '' : ' --no-stats';
       workflowYamlOutput.textContent = `name: Refresh Profile Heatmap
 
 on:
@@ -579,21 +604,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Download ghgraph CLI
-        run: |
-          mkdir -p assets
-          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
-
-      - name: Generate Heatmap Cards
+      - name: Generate Animated Heatmap Cards
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
         run: |
-          python ghgraph.py --repo \${{ github.repository }} --year $(date +%Y) --dry-run
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+          python3 ghgraph.py --card --username \${{ github.repository_owner }} --theme both --output assets/${statsFlag}
+          rm -f ghgraph.py
 
       - name: Commit and push changes
         run: |
@@ -604,7 +621,50 @@ jobs:
     }
   }
 
+  function triggerSvgDownload(theme) {
+    const username = (studioUsername ? studioUsername.value : '') || 'username';
+    const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
+    const svgCode = buildProfileCardSvg(username, theme, showStats);
+    const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ghgraph-${theme}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function openStudioModal() {
+    if (profileStudioModal) {
+      profileStudioModal.removeAttribute('hidden');
+      updateStudioPreview();
+    }
+  }
+
+  function closeStudioModal() {
+    if (profileStudioModal) {
+      profileStudioModal.setAttribute('hidden', '');
+    }
+  }
+
   function initProfileStudio() {
+    if (openStudioBtn) openStudioBtn.addEventListener('click', openStudioModal);
+    if (closeStudioBtn) closeStudioBtn.addEventListener('click', closeStudioModal);
+
+    if (profileStudioModal) {
+      profileStudioModal.addEventListener('click', (e) => {
+        if (e.target === profileStudioModal) closeStudioModal();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && profileStudioModal && !profileStudioModal.hasAttribute('hidden')) {
+        closeStudioModal();
+      }
+    });
+
     if (studioUsername) {
       studioUsername.addEventListener('input', () => {
         updateStudioPreview();
@@ -647,25 +707,23 @@ jobs:
           if (workflowPanel) {
             workflowPanel.style.display = currentStudioMode === 'action' ? 'block' : 'none';
           }
+          if (staticNotePanel) {
+            if (currentStudioMode === 'static') {
+              staticNotePanel.removeAttribute('hidden');
+            } else {
+              staticNotePanel.setAttribute('hidden', '');
+            }
+          }
         });
       });
     }
 
-    if (downloadSvgBtn) {
-      downloadSvgBtn.addEventListener('click', () => {
-        const username = (studioUsername ? studioUsername.value : '') || 'username';
-        const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
-        const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ghgraph-${currentStudioTheme}.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
+    if (downloadDarkSvgBtn) {
+      downloadDarkSvgBtn.addEventListener('click', () => triggerSvgDownload('dark'));
+    }
+
+    if (downloadLightSvgBtn) {
+      downloadLightSvgBtn.addEventListener('click', () => triggerSvgDownload('light'));
     }
 
     if (copySvgRawBtn) {
