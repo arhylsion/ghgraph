@@ -518,16 +518,16 @@
         </div>
       </div>
 
-      <div id="tabHeatmapControls" class="studio-controls-bar">
+      <div id="tabHeatmapControls" class="studio-controls-bar studio-grid-2">
         <div class="studio-input-wrap">
           <label for="studioUsername" class="studio-label">GitHub Username</label>
           <div class="studio-fetch-row">
             <div class="studio-input-box">
               <span class="studio-at">@</span>
-              <input id="studioUsername" type="text" class="studio-text-input" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
+              <input id="studioUsername" type="text" class="studio-text-input studio-text-mono" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
             </div>
             <button id="fetchContribBtn" class="studio-fetch-btn" type="button" title="Fetch real public contributions from GitHub">Fetch</button>
-            <button id="usePaintedBtn" class="studio-action-btn" type="button" hidden title="Switch back to painted canvas">Painted</button>
+            <button id="usePaintedBtn" class="studio-action-btn studio-painted-btn" type="button" hidden title="Switch back to painted canvas">Painted</button>
           </div>
           <span id="fetchStatusText" class="studio-fetch-status">Using painted canvas</span>
         </div>
@@ -545,8 +545,8 @@
         <div class="studio-group">
           <span class="studio-label">Delivery Mode</span>
           <div id="studioModePills" class="studio-pills" role="tablist">
-            <button class="studio-pill active" data-mode="action" type="button" role="tab" aria-selected="true">GitHub Action (Auto-Refresh)</button>
-            <button class="studio-pill" data-mode="static" type="button" role="tab" aria-selected="false">Static SVG (Direct Embed)</button>
+            <button class="studio-pill active" data-mode="action" type="button" role="tab" aria-selected="true">GitHub Action</button>
+            <button class="studio-pill" data-mode="static" type="button" role="tab" aria-selected="false">Static SVG</button>
           </div>
         </div>
 
@@ -558,49 +558,57 @@
         </div>
       </div>
 
-      <div id="tabHeroControls" class="studio-controls-bar" hidden>
+      <div id="tabHeroControls" class="studio-controls-bar studio-grid-2" hidden>
         <div class="studio-input-wrap">
           <label for="heroNameInput" class="studio-label">Display Name</label>
           <div class="studio-input-box">
-            <input id="heroNameInput" type="text" class="studio-text-input studio-field-md" value="Arhylsion" placeholder="Your Name" spellcheck="false">
+            <input id="heroNameInput" type="text" class="studio-text-input" value="Arhylsion" placeholder="Your Name" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
-          <label for="heroStatusInput" class="studio-label">Status Pill</label>
+          <label for="heroStatusInput" class="studio-label">Status &amp; Location</label>
           <div class="studio-input-box">
-            <input id="heroStatusInput" type="text" class="studio-text-input studio-field-md" value="Building clean developer tools" placeholder="Available for projects" spellcheck="false">
+            <input id="heroStatusInput" type="text" class="studio-text-input" value="Building open-source tools · Indonesia" placeholder="Taking on freelance work · City" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
-          <label for="heroTaglineInput" class="studio-label">Bio / Role Tagline</label>
+          <label for="heroHeadline1Input" class="studio-label">Headline Line 1 (Primary)</label>
           <div class="studio-input-box">
-            <input id="heroTaglineInput" type="text" class="studio-text-input studio-field-wide" value="Designing fast software, automations, and expressive interfaces." placeholder="Short role or bio headline" spellcheck="false">
+            <input id="heroHeadline1Input" type="text" class="studio-text-input" value="I build fast tools that do the work," placeholder="Main bold headline line" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="heroHeadline2Input" class="studio-label">Headline Line 2 (Muted Accent)</label>
+          <div class="studio-input-box">
+            <input id="heroHeadline2Input" type="text" class="studio-text-input" value="and the interfaces they live in." placeholder="Second editorial line" spellcheck="false">
           </div>
         </div>
       </div>
 
-      <div id="tabStackControls" class="studio-controls-bar" hidden>
+      <div id="tabStackControls" class="studio-controls-bar studio-grid-2" hidden>
         <div class="studio-input-wrap">
-          <label for="stackTitleInput" class="studio-label">Section Title</label>
+          <label for="stackTitleInput" class="studio-label">Heading Bold</label>
           <div class="studio-input-box">
-            <input id="stackTitleInput" type="text" class="studio-text-input studio-field-md" value="Tools &amp; Stack" placeholder="Tools &amp; Stack" spellcheck="false">
+            <input id="stackTitleInput" type="text" class="studio-text-input" value="Tools." placeholder="Tools." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
-          <label for="stackSubtitleInput" class="studio-label">Subtitle</label>
+          <label for="stackSubtitleInput" class="studio-label">Heading Muted</label>
           <div class="studio-input-box">
-            <input id="stackSubtitleInput" type="text" class="studio-text-input studio-field-md" value="What I build with daily" placeholder="What I build with" spellcheck="false">
+            <input id="stackSubtitleInput" type="text" class="studio-text-input" value="What I build with." placeholder="What I build with." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
-          <label for="stackItemsInput" class="studio-label">Technologies (comma-separated)</label>
+          <label for="stackItemsInput" class="studio-label">Technologies (comma-separated — auto-matches real brand icons)</label>
           <div class="studio-input-box">
-            <input id="stackItemsInput" type="text" class="studio-text-input studio-field-wide" value="Python, TypeScript, React, Next.js, Node.js, Tailwind CSS, PostgreSQL, Docker, Linux, Git" placeholder="Python, TypeScript, React..." spellcheck="false">
+            <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="TypeScript, Python, React, Next.js, Node.js, Vite, Astro, Tailwind CSS, PostgreSQL, Supabase, Docker, Cursor, Claude, n8n, Git" placeholder="TypeScript, Python, React..." spellcheck="false">
           </div>
+          <div id="stackQuickPicks" class="stack-quick-picks" aria-label="Quick toggle technologies"></div>
         </div>
       </div>
 

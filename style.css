@@ -1170,6 +1170,12 @@ pre::-webkit-scrollbar-thumb:hover,
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+}
+
+.studio-fetch-row .studio-input-box {
+  flex: 1;
+  min-width: 0;
 }
 
 .studio-fetch-btn {
@@ -1183,7 +1189,14 @@ pre::-webkit-scrollbar-thumb:hover,
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
   transition: opacity var(--transition), transform var(--transition);
+}
+
+.studio-painted-btn {
+  height: 36px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
 .studio-fetch-btn:hover {
@@ -1199,22 +1212,49 @@ pre::-webkit-scrollbar-thumb:hover,
   font-family: var(--font-mono);
   font-size: 0.74rem;
   color: var(--text-dim);
-}
-
-.studio-field-md {
-  width: 210px;
+  min-height: 18px;
 }
 
 .studio-field-full {
-  flex: 1 1 100%;
-}
-
-.studio-field-wide {
-  width: 100%;
+  grid-column: 1 / -1;
 }
 
 .studio-controls-bar[hidden] {
   display: none !important;
+}
+
+.stack-quick-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.stack-pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background-color: var(--bg-container);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.stack-pick-chip:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.stack-pick-chip.active {
+  background-color: var(--accent-container);
+  color: var(--on-accent-container);
+  border-color: transparent;
 }
 
 .code-panel-heading-row {
@@ -1279,11 +1319,11 @@ pre::-webkit-scrollbar-thumb:hover,
 }
 
 .studio-controls-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 16px;
-  padding-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 14px 18px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -1292,11 +1332,12 @@ pre::-webkit-scrollbar-thumb:hover,
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .studio-label {
-  font-size: 0.78rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1305,10 +1346,11 @@ pre::-webkit-scrollbar-thumb:hover,
 .studio-input-box {
   display: flex;
   align-items: center;
+  width: 100%;
   background-color: var(--bg-container);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0 10px;
+  padding: 0 12px;
   height: 36px;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -1320,9 +1362,10 @@ pre::-webkit-scrollbar-thumb:hover,
 
 .studio-at {
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: var(--text-dim);
   margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .studio-text-input {
@@ -1330,13 +1373,23 @@ pre::-webkit-scrollbar-thumb:hover,
   border: none;
   outline: none;
   color: var(--text);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.88rem;
-  width: 130px;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+}
+
+.studio-text-mono {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
 }
 
 .studio-pills {
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
   background-color: var(--bg-container);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
@@ -1351,9 +1404,10 @@ pre::-webkit-scrollbar-thumb:hover,
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 500;
-  padding: 5px 12px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--transition);
 }
 
@@ -1368,8 +1422,8 @@ pre::-webkit-scrollbar-thumb:hover,
 }
 
 .studio-toggle-group {
-  align-self: flex-end;
-  height: 34px;
+  align-self: end;
+  height: 36px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1628,6 +1682,10 @@ pre::-webkit-scrollbar-thumb:hover,
   .studio-modal-card {
     padding: 18px 14px;
     max-height: 90vh;
+  }
+
+  .studio-controls-bar {
+    grid-template-columns: 1fr;
   }
 
   .studio-preview-header {
