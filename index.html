@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <div class="page-container">
@@ -643,6 +643,32 @@
 
       <div id="tabProjectControls" class="studio-controls-bar studio-grid-2" hidden>
         <div class="studio-input-wrap">
+          <label for="workTitleInput" class="studio-label">Section Heading Bold</label>
+          <div class="studio-input-box">
+            <input id="workTitleInput" type="text" class="studio-text-input" value="Selected work." placeholder="Selected work." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="workSubtitleInput" class="studio-label">Section Heading Muted</label>
+          <div class="studio-input-box">
+            <input id="workSubtitleInput" type="text" class="studio-text-input" value="Products, client sites and open source." placeholder="Products, client sites and my own label." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="proj-canvas-toolbar studio-field-full">
+          <div class="proj-toolbar-meta">
+            <span id="projEditingLabel" class="proj-editing-pill">Editing: ghgraph (1 of 3)</span>
+            <span class="proj-drag-hint">Drag cards in the canvas below to reorder, or click 100% / 49% to resize</span>
+          </div>
+          <div class="proj-toolbar-actions">
+            <button id="addProjectBtn" class="studio-action-btn studio-copy-full-btn" type="button">+ Add Project</button>
+            <button id="dupProjectBtn" class="studio-action-btn" type="button" title="Duplicate selected project">Duplicate</button>
+            <button id="delProjectBtn" class="studio-action-btn proj-del-btn" type="button" title="Remove selected project">Remove</button>
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
           <label for="projNameInput" class="studio-label">Project Name</label>
           <div class="studio-input-box">
             <input id="projNameInput" type="text" class="studio-text-input" value="ghgraph" placeholder="Project Name" spellcheck="false">
@@ -650,9 +676,9 @@
         </div>
 
         <div class="studio-input-wrap">
-          <label for="projCatInput" class="studio-label">Category / Tag</label>
+          <label for="projCatInput" class="studio-label">Category / Tag (Featured 100%)</label>
           <div class="studio-input-box">
-            <input id="projCatInput" type="text" class="studio-text-input" value="CLI &amp; Profile README Studio" placeholder="Web app / macOS app / SaaS" spellcheck="false">
+            <input id="projCatInput" type="text" class="studio-text-input" value="CLI &amp; Profile README Studio" placeholder="Native app / SaaS / Open Source" spellcheck="false">
           </div>
         </div>
 
@@ -670,12 +696,37 @@
           </div>
         </div>
 
-        <div class="studio-group">
-          <span class="studio-label">Card Width</span>
-          <div id="projWidthPills" class="studio-pills" role="tablist">
-            <button class="studio-pill active" data-width="full" type="button" role="tab" aria-selected="true">Featured (100%)</button>
-            <button class="studio-pill" data-width="half" type="button" role="tab" aria-selected="false">2-Col Grid (49%)</button>
+        <div class="studio-grid-2-inline">
+          <div class="studio-input-wrap">
+            <label for="projYearInput" class="studio-label">Year (49% Card)</label>
+            <div class="studio-input-box">
+              <input id="projYearInput" type="text" class="studio-text-input studio-text-mono" value="2026" placeholder="2026" spellcheck="false">
+            </div>
           </div>
+
+          <div class="studio-group">
+            <span class="studio-label">Card Span</span>
+            <div id="projWidthPills" class="studio-pills" role="tablist">
+              <button class="studio-pill active" data-width="full" type="button" role="tab" aria-selected="true">100%</button>
+              <button class="studio-pill" data-width="half" type="button" role="tab" aria-selected="false">49%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <div class="studio-label-row">
+            <label for="projIconInput" class="studio-label">Project Icon (pick below, type any Simple Icons slug, or upload custom logo)</label>
+            <span id="projIconStatus" class="studio-fetch-status"></span>
+          </div>
+          <div class="studio-fetch-row">
+            <div class="studio-input-box">
+              <input id="projIconInput" type="text" class="studio-text-input studio-text-mono" value="github" placeholder="sparkles, terminal, react, apple, figma, assets/logo.png..." spellcheck="false">
+            </div>
+            <input id="projIconFile" type="file" accept="image/*" hidden>
+            <button id="projIconUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload custom app logo PNG/JPG">Upload</button>
+            <button id="projIconClearBtn" class="studio-action-btn studio-painted-btn" type="button" title="Use 2-letter monogram">Monogram</button>
+          </div>
+          <div id="projIconPicker" class="proj-icon-picker" aria-label="Choose project icon"></div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
@@ -687,7 +738,6 @@
             <input id="projImageFile" type="file" accept="image/*" hidden>
             <button id="projImageUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload project screenshot">Upload</button>
             <button id="projImageClearBtn" class="studio-action-btn studio-painted-btn" type="button" hidden title="Remove screenshot">Reset</button>
-            <button id="downloadWorkHeaderBtn" class="studio-action-btn studio-painted-btn" type="button" title="Download matching 'Selected work.' section header Dark & Light SVGs">Section Header SVGs</button>
           </div>
         </div>
       </div>
@@ -788,6 +838,7 @@ Luma | https://lu.ma/arhylsion</textarea>
 
         <div id="studioSvgPreviewWrap" class="studio-svg-viewport">
           <div id="studioSvgPreview" class="studio-svg-render"></div>
+          <div id="projectBentoCanvas" class="project-bento-canvas" hidden></div>
         </div>
       </div>
 
@@ -942,6 +993,6 @@ Luma | https://lu.ma/arhylsion</textarea>
     </div>
   </div>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

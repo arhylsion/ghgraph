@@ -1413,6 +1413,275 @@ pre::-webkit-scrollbar-thumb:hover,
   border-color: transparent;
 }
 
+.studio-grid-2-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.proj-canvas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-container);
+  border: 1px solid var(--border);
+}
+
+.proj-toolbar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.proj-editing-pill {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--on-accent-container);
+  background-color: var(--accent-container);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.proj-drag-hint {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.proj-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.proj-del-btn:hover {
+  border-color: #fca5b9;
+  color: #fca5b9;
+}
+
+.proj-del-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.proj-icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.proj-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background-color: var(--bg-container);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.73rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.proj-icon-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.proj-icon-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.proj-icon-btn.active {
+  background-color: var(--accent-container);
+  color: var(--on-accent-container);
+  border-color: transparent;
+}
+
+.project-bento-canvas {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-bento-canvas[hidden],
+.studio-svg-render[hidden] {
+  display: none !important;
+}
+
+.bento-header-preview {
+  width: 100%;
+  line-height: 0;
+}
+
+.bento-header-preview svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.bento-tile {
+  position: relative;
+  border-radius: 16px;
+  cursor: grab;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+  user-select: none;
+}
+
+.bento-tile:active {
+  cursor: grabbing;
+}
+
+.bento-tile.span-full {
+  grid-column: 1 / -1;
+}
+
+.bento-tile.span-half {
+  grid-column: span 1;
+}
+
+.bento-tile.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.bento-tile.dragging {
+  opacity: 0.42;
+  transform: scale(0.985);
+}
+
+.bento-tile.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: 3px;
+}
+
+.bento-tile-svg {
+  width: 100%;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.bento-tile-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+}
+
+.bento-tile-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: var(--radius-full);
+  background-color: rgba(20, 18, 22, 0.84);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  transition: opacity 140ms ease;
+  z-index: 4;
+}
+
+.bento-tile:hover .bento-tile-controls,
+.bento-tile.selected .bento-tile-controls {
+  opacity: 1;
+}
+
+.bento-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  color: rgba(244, 240, 248, 0.72);
+  font-size: 0.76rem;
+  letter-spacing: -1px;
+  cursor: grab;
+}
+
+.bento-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #f4f0f8;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.bento-ctrl-btn:hover {
+  background-color: var(--accent);
+  color: var(--on-accent);
+  border-color: transparent;
+}
+
+.bento-ctrl-btn.danger:hover {
+  background-color: #fca5b9;
+  color: #2b0f17;
+}
+
+.bento-ctrl-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.bento-add-tile {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--border);
+  background-color: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background-color var(--transition);
+}
+
+.bento-add-tile:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--bg-container);
+}
+
 .code-panel-heading-row {
   display: flex;
   flex-wrap: wrap;
@@ -1964,6 +2233,23 @@ pre::-webkit-scrollbar-thumb:hover,
 
   .studio-controls-bar {
     grid-template-columns: 1fr;
+  }
+
+  .studio-grid-2-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-tile.span-half,
+  .bento-tile.span-full {
+    grid-column: 1 / -1;
+  }
+
+  .bento-tile-controls {
+    opacity: 1;
   }
 
   .studio-preview-header {

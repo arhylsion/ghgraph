@@ -461,16 +461,29 @@
   const stackItemsInput = document.getElementById('stackItemsInput');
   const stackQuickPicks = document.getElementById('stackQuickPicks');
   const stackIconStatus = document.getElementById('stackIconStatus');
+  const workTitleInput = document.getElementById('workTitleInput');
+  const workSubtitleInput = document.getElementById('workSubtitleInput');
+  const projEditingLabel = document.getElementById('projEditingLabel');
+  const addProjectBtn = document.getElementById('addProjectBtn');
+  const dupProjectBtn = document.getElementById('dupProjectBtn');
+  const delProjectBtn = document.getElementById('delProjectBtn');
   const projNameInput = document.getElementById('projNameInput');
   const projCatInput = document.getElementById('projCatInput');
   const projDescInput = document.getElementById('projDescInput');
   const projUrlInput = document.getElementById('projUrlInput');
+  const projYearInput = document.getElementById('projYearInput');
   const projWidthPills = document.getElementById('projWidthPills');
+  const projIconInput = document.getElementById('projIconInput');
+  const projIconFile = document.getElementById('projIconFile');
+  const projIconUploadBtn = document.getElementById('projIconUploadBtn');
+  const projIconClearBtn = document.getElementById('projIconClearBtn');
+  const projIconStatus = document.getElementById('projIconStatus');
+  const projIconPicker = document.getElementById('projIconPicker');
   const projImageInput = document.getElementById('projImageInput');
   const projImageFile = document.getElementById('projImageFile');
   const projImageUploadBtn = document.getElementById('projImageUploadBtn');
   const projImageClearBtn = document.getElementById('projImageClearBtn');
-  const downloadWorkHeaderBtn = document.getElementById('downloadWorkHeaderBtn');
+  const projectBentoCanvas = document.getElementById('projectBentoCanvas');
   const contactTitleInput = document.getElementById('contactTitleInput');
   const contactSubtitleInput = document.getElementById('contactSubtitleInput');
   const contactModePills = document.getElementById('contactModePills');
@@ -515,7 +528,7 @@
     { id: 'heatmap', label: 'Heatmap', desc: 'Animated 52-week contribution graph' },
     { id: 'hero', label: 'Hero Banner', desc: 'Editorial intro with avatar & headline' },
     { id: 'stack', label: 'Tech Stack', desc: 'Dynamic Simple Icons tool pills' },
-    { id: 'project', label: 'Project', desc: 'Selected work showcase card (100% / 49%)' },
+    { id: 'project', label: 'Project', desc: 'Drag-and-drop bento work canvas & icon picker' },
     { id: 'contact', label: 'Contact', desc: 'Social media links with Simple Icons' },
     { id: 'quote', label: 'Dev Quote', desc: 'M3 styled random or custom dev quote' }
   ];
@@ -556,19 +569,102 @@
     { name: 'Threads', url: 'https://threads.net/@username' }
   ];
 
+  const BUILTIN_PROJECT_ICONS = {
+    sparkles: 'M12 2l2.1 5.9L20 10l-5.9 2.1L12 18l-2.1-5.9L4 10l5.9-2.1L12 2zm7 13l1.1 2.9L23 19l-2.9 1.1L19 23l-1.1-2.9L15 19l2.9-1.1L19 15z',
+    terminal: 'M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm4.3 4.3a1 1 0 0 0 0 1.4L9.6 13l-2.3 2.3a1 1 0 1 0 1.4 1.4l3-3a1 1 0 0 0 0-1.4l-3-3a1 1 0 0 0-1.4 0zM12 16a1 1 0 1 0 0 2h5a1 1 0 1 0 0-2h-5z',
+    code: 'M8.7 16.7a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4l4-4a1 1 0 1 1 1.4 1.4L5.4 12l3.3 3.3a1 1 0 0 1 0 1.4zm6.6 0a1 1 0 0 1 0-1.4L18.6 12l-3.3-3.3a1 1 0 1 1 1.4-1.4l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4 0zM13.9 5.3a1 1 0 0 1 .8 1.2l-3.4 12a1 1 0 1 1-1.9-.6l3.4-12a1 1 0 0 1 1.1-.6z',
+    globe: FALLBACK_SOCIAL_ICONS.website,
+    layers: 'M12 2L2 7l10 5 10-5-10-5zm0 12.6L4.2 10.7 2 11.8l10 5 10-5-2.2-1.1L12 14.6zm0 4.4l-7.8-3.9L2 16.2l10 5 10-5-2.2-1.1L12 19z',
+    mobile: 'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 3v13h10V5H7zm4 14.5a1 1 0 1 0 2 0 1 1 0 0 0-2 0z',
+    desktop: 'M3 4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-6v2h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2H5a2 2 0 0 1-2-2V4zm2 1v10h14V5H5z',
+    cube: 'M12 2l9 5v10l-9 5-9-5V7l9-5zm0 2.3L5.6 7.8 12 11.4l6.4-3.6L12 4.3zM5 9.8v6.1l6 3.3v-6.1L5 9.8zm8 9.4l6-3.3V9.8l-6 3.3v6.1z',
+    bolt: 'M13 2L4 14h7l-1 8 10-12h-7l0-8z',
+    palette: 'M12 2a10 10 0 0 0 0 20c1.4 0 2.3-1 2.3-2.1 0-.6-.2-1.1-.6-1.5-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3A4.5 4.5 0 0 0 22 10.6C22 5.8 17.5 2 12 2zM6.5 11.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z',
+    database: 'M12 3C7 3 3 4.8 3 7v10c0 2.2 4 4 9 4s9-1.8 9-4V7c0-2.2-4-4-9-4zm0 2c4.1 0 7 1.3 7 2s-2.9 2-7 2-7-1.3-7-2 2.9-2 7-2zm-7 5.2c1.7 1.1 4.3 1.8 7 1.8s5.3-.7 7-1.8V12c0 .7-2.9 2-7 2s-7-1.3-7-2v-1.8zm0 5c1.7 1.1 4.3 1.8 7 1.8s5.3-.7 7-1.8V17c0 .7-2.9 2-7 2s-7-1.3-7-2v-1.8z',
+    rocket: 'M14.5 2.3c3.3-.5 6.2.4 7.2 1.4 1 1 1.9 3.9 1.4 7.2-.6 3.5-2.8 6.4-5.4 8.3l-2.6-2.6-2.5 2.5-3.9-3.9 2.5-2.5-2.6-2.6c1.9-2.6 4.8-4.8 8.3-5.4zM16 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM4.5 15.5l4 4c-1.5 1.5-4.5 2.2-6 2.3.1-1.5.8-4.5 2-6.3z'
+  };
+
+  const QUICK_PICK_PROJECT_ICONS = [
+    { slug: 'sparkles', label: 'Sparkles' },
+    { slug: 'terminal', label: 'Terminal' },
+    { slug: 'code', label: 'Code' },
+    { slug: 'globe', label: 'Web' },
+    { slug: 'layers', label: 'Layers' },
+    { slug: 'mobile', label: 'Mobile' },
+    { slug: 'desktop', label: 'Desktop' },
+    { slug: 'cube', label: '3D' },
+    { slug: 'bolt', label: 'Bolt' },
+    { slug: 'palette', label: 'Design' },
+    { slug: 'database', label: 'Data' },
+    { slug: 'rocket', label: 'Rocket' },
+    { slug: 'github', label: 'GitHub' },
+    { slug: 'react', label: 'React' },
+    { slug: 'nextdotjs', label: 'Next.js' },
+    { slug: 'figma', label: 'Figma' },
+    { slug: 'apple', label: 'macOS' },
+    { slug: 'openai', label: 'AI' },
+    { slug: 'vercel', label: 'Vercel' },
+    { slug: 'rust', label: 'Rust' }
+  ];
+
+  const projectItems = [
+    {
+      id: 'proj-1',
+      name: 'ghgraph',
+      category: 'CLI & Profile README Studio',
+      desc: 'Back-dated GitHub contribution graph painter and M3 Expressive profile kit generator.',
+      year: '2026',
+      url: 'https://arhylsion.github.io/ghgraph/',
+      width: 'full',
+      iconValue: 'github',
+      iconDataUrl: '',
+      coverValue: '',
+      coverDataUrl: ''
+    },
+    {
+      id: 'proj-2',
+      name: 'Studio Workspace',
+      category: 'Web App',
+      desc: 'Realtime design system tokens & component previewer.',
+      year: '2026',
+      url: 'https://github.com/arhylsion',
+      width: 'half',
+      iconValue: 'sparkles',
+      iconDataUrl: '',
+      coverValue: '',
+      coverDataUrl: ''
+    },
+    {
+      id: 'proj-3',
+      name: 'Dev Toolkit',
+      category: 'Open Source',
+      desc: 'Fast terminal utilities and developer automations.',
+      year: '2026',
+      url: 'https://github.com/arhylsion',
+      width: 'half',
+      iconValue: 'terminal',
+      iconDataUrl: '',
+      coverValue: '',
+      coverDataUrl: ''
+    }
+  ];
+
+  let selectedProjectId = projectItems[0].id;
+  let nextProjectSeq = 4;
+  let dragProjectId = null;
+
   let currentStudioTab = 'heatmap';
   let currentStudioTheme = 'dark';
   let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
   let currentWorkflowScope = 'public';
   let currentEmbedScope = 'kit';
-  let currentProjWidth = 'full';
   let currentContactMode = 'card';
   let heroAvatarDataUrl = '';
-  let projImageDataUrl = '';
   let fetchedState = null;
   let iconFetchTimer = null;
   let contactFetchTimer = null;
+  let projIconFetchTimer = null;
   let quoteIdx = 0;
   const remoteIconCache = new Map();
 
@@ -889,11 +985,238 @@ ${auroraBg}
   function getIconPath(name) {
     const slug = toSimpleIconSlug(name);
     if (!slug) return null;
+    if (BUILTIN_PROJECT_ICONS[slug]) return BUILTIN_PROJECT_ICONS[slug];
     if (remoteIconCache.has(slug) && remoteIconCache.get(slug)) {
       return remoteIconCache.get(slug);
     }
     if (FALLBACK_SOCIAL_ICONS[slug]) return FALLBACK_SOCIAL_ICONS[slug];
     return null;
+  }
+
+  function isImageHref(val) {
+    const v = String(val || '').trim();
+    if (!v) return false;
+    return /^(data:image\/|https?:\/\/)/i.test(v) || /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(v) || v.includes('/');
+  }
+
+  function getSelectedProject() {
+    let found = projectItems.find(p => p.id === selectedProjectId);
+    if (!found && projectItems.length) {
+      found = projectItems[0];
+      selectedProjectId = found.id;
+    }
+    return found;
+  }
+
+  function getProjectAssetSlug(proj, idx) {
+    const base = `card-${slugifyName(proj ? proj.name : 'project')}`;
+    let count = 0;
+    for (let i = 0; i <= idx && i < projectItems.length; i++) {
+      if (`card-${slugifyName(projectItems[i].name)}` === base) count++;
+    }
+    return count > 1 ? `${base}-${count}` : base;
+  }
+
+  function getProjectMonogram(name) {
+    const words = String(name || '').trim().split(/[\s|/_-]+/).filter(Boolean);
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    const clean = (name || '').trim();
+    return clean ? clean.slice(0, 2).toUpperCase() : 'PR';
+  }
+
+  async function syncDynamicProjectIcons() {
+    const slugs = new Set();
+    QUICK_PICK_PROJECT_ICONS.forEach(item => {
+      if (!BUILTIN_PROJECT_ICONS[item.slug]) slugs.add(item.slug);
+    });
+    projectItems.forEach(p => {
+      const val = (p.iconValue || '').trim();
+      if (val && !p.iconDataUrl && !isImageHref(val)) {
+        const s = toSimpleIconSlug(val);
+        if (s && !BUILTIN_PROJECT_ICONS[s] && !FALLBACK_SOCIAL_ICONS[s]) slugs.add(s);
+      }
+    });
+
+    const missing = [...slugs].filter(s => !remoteIconCache.has(s));
+    if (missing.length > 0) {
+      if (projIconStatus) projIconStatus.textContent = `Loading ${missing.length} icon(s)...`;
+      await Promise.all(missing.map(fetchIconPathBySlug));
+    }
+
+    updateProjectIconStatus();
+    renderProjectIconPicker();
+    if (currentStudioTab === 'project') {
+      updateStudioPreview();
+    }
+  }
+
+  function updateProjectIconStatus() {
+    if (!projIconStatus) return;
+    const proj = getSelectedProject();
+    if (!proj) return;
+    if (proj.iconDataUrl) {
+      projIconStatus.textContent = 'Using uploaded custom logo';
+      return;
+    }
+    const raw = (proj.iconValue || '').trim();
+    if (!raw) {
+      projIconStatus.textContent = `Using monogram (${getProjectMonogram(proj.name)})`;
+      return;
+    }
+    if (isImageHref(raw)) {
+      projIconStatus.textContent = `Using image path: ${raw}`;
+      return;
+    }
+    const slug = toSimpleIconSlug(raw);
+    if (BUILTIN_PROJECT_ICONS[slug]) {
+      projIconStatus.textContent = `Built-in icon: ${slug}`;
+    } else if (remoteIconCache.get(slug) || FALLBACK_SOCIAL_ICONS[slug]) {
+      projIconStatus.textContent = `Simple Icons: ${slug}`;
+    } else {
+      projIconStatus.textContent = `Icon "${raw}" not found — showing monogram`;
+    }
+  }
+
+  function renderProjectIconPicker() {
+    if (!projIconPicker) return;
+    const proj = getSelectedProject();
+    const activeSlug = proj && !proj.iconDataUrl ? toSimpleIconSlug(proj.iconValue || '') : '';
+    projIconPicker.innerHTML = '';
+
+    QUICK_PICK_PROJECT_ICONS.forEach(item => {
+      const pathD = BUILTIN_PROJECT_ICONS[item.slug] || remoteIconCache.get(item.slug) || '';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'proj-icon-btn' + (activeSlug === item.slug ? ' active' : '');
+      btn.dataset.icon = item.slug;
+      const svgMarkup = pathD
+        ? `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${pathD}"/></svg>`
+        : '';
+      btn.innerHTML = `${svgMarkup}<span>${item.label}</span>`;
+      btn.addEventListener('click', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.iconValue = item.slug;
+        cur.iconDataUrl = '';
+        if (projIconInput) projIconInput.value = item.slug;
+        if (projIconFile) projIconFile.value = '';
+        updateProjectIconStatus();
+        renderProjectIconPicker();
+        updateStudioPreview();
+      });
+      projIconPicker.appendChild(btn);
+    });
+  }
+
+  function syncProjectInspectorFromState() {
+    const proj = getSelectedProject();
+    if (!proj) return;
+    const idx = projectItems.findIndex(p => p.id === proj.id);
+    if (projEditingLabel) {
+      projEditingLabel.textContent = `Editing: ${proj.name || 'Untitled'} (${idx + 1} of ${projectItems.length})`;
+    }
+    if (delProjectBtn) {
+      delProjectBtn.disabled = projectItems.length <= 1;
+    }
+    if (projNameInput) projNameInput.value = proj.name;
+    if (projCatInput) projCatInput.value = proj.category;
+    if (projDescInput) projDescInput.value = proj.desc;
+    if (projUrlInput) projUrlInput.value = proj.url;
+    if (projYearInput) projYearInput.value = proj.year;
+    if (projIconInput) projIconInput.value = proj.iconValue;
+    if (projImageInput) projImageInput.value = proj.coverValue;
+    if (projImageClearBtn) {
+      projImageClearBtn.toggleAttribute('hidden', !(proj.coverDataUrl || (proj.coverValue || '').trim()));
+    }
+    if (projWidthPills) {
+      const pills = projWidthPills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        const isActive = pill.dataset.width === proj.width;
+        pill.classList.toggle('active', isActive);
+        pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+    updateProjectIconStatus();
+    renderProjectIconPicker();
+  }
+
+  function addNewProject() {
+    const num = nextProjectSeq++;
+    const newProj = {
+      id: `proj-${num}`,
+      name: `Project ${num}`,
+      category: 'Web App',
+      desc: 'Built with clean architecture and thoughtful design.',
+      year: String(new Date().getFullYear()),
+      url: 'https://github.com/arhylsion',
+      width: 'half',
+      iconValue: 'rocket',
+      iconDataUrl: '',
+      coverValue: '',
+      coverDataUrl: ''
+    };
+    projectItems.push(newProj);
+    selectedProjectId = newProj.id;
+    syncProjectInspectorFromState();
+    updateStudioPreview();
+  }
+
+  function duplicateSelectedProject() {
+    const cur = getSelectedProject();
+    if (!cur) return;
+    const idx = projectItems.findIndex(p => p.id === cur.id);
+    const num = nextProjectSeq++;
+    const copy = {
+      ...cur,
+      id: `proj-${num}`,
+      name: `${cur.name} Copy`
+    };
+    projectItems.splice(idx + 1, 0, copy);
+    selectedProjectId = copy.id;
+    syncProjectInspectorFromState();
+    updateStudioPreview();
+  }
+
+  function deleteProjectById(id) {
+    if (projectItems.length <= 1) return;
+    const idx = projectItems.findIndex(p => p.id === id);
+    if (idx < 0) return;
+    projectItems.splice(idx, 1);
+    if (selectedProjectId === id) {
+      const nextIdx = Math.min(idx, projectItems.length - 1);
+      selectedProjectId = projectItems[nextIdx].id;
+    }
+    syncProjectInspectorFromState();
+    updateStudioPreview();
+  }
+
+  function reorderProjects(fromId, toId) {
+    if (!fromId || !toId || fromId === toId) return;
+    const fromIdx = projectItems.findIndex(p => p.id === fromId);
+    const toIdx = projectItems.findIndex(p => p.id === toId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    const [moved] = projectItems.splice(fromIdx, 1);
+    projectItems.splice(toIdx, 0, moved);
+    syncProjectInspectorFromState();
+    updateStudioPreview();
+  }
+
+  function moveProjectByOffset(id, delta) {
+    const idx = projectItems.findIndex(p => p.id === id);
+    const next = idx + delta;
+    if (idx < 0 || next < 0 || next >= projectItems.length) return;
+    const [moved] = projectItems.splice(idx, 1);
+    projectItems.splice(next, 0, moved);
+    syncProjectInspectorFromState();
+    updateStudioPreview();
+  }
+
+  function toggleProjectWidth(id) {
+    const target = projectItems.find(p => p.id === id);
+    if (!target) return;
+    target.width = target.width === 'full' ? 'half' : 'full';
+    syncProjectInspectorFromState();
+    updateStudioPreview();
   }
 
   function slugifyName(str) {
@@ -1002,63 +1325,240 @@ ${avatarBlock}
 </svg>`;
   }
 
-  function buildProjectCardSvg(name, category, desc, imgHref, widthMode, theme) {
+  function buildProjectCardSvg(proj, theme) {
+    const item = proj || getSelectedProject() || projectItems[0];
     const p = getThemePalette(theme);
-    const isHalf = widthMode === 'half';
+    const isHalf = item.width === 'half';
     const w = isHalf ? 400 : 820;
-    const previewH = isHalf ? 186 : 286;
+    const previewH = isHalf ? 188 : 286;
     const footerH = 82;
     const h = previewH + footerH + 16;
     const pad = 12;
     const innerW = w - pad * 2;
-    const cleanName = escapeXml((name || '').trim() || 'Project');
-    const initial = escapeXml(((name || '').trim()[0] || 'P').toUpperCase());
-    const cleanCat = escapeXml((category || '').trim() || 'Web App');
-    const maxDescChars = isHalf ? 44 : 92;
-    const rawDesc = (desc || '').trim() || 'Built with clean architecture and thoughtful design.';
+    const uid = slugifyName(item.id || item.name || 'proj');
+    const clipId = `gh-pclip-${uid}`;
+    const iconClipId = `gh-piclip-${uid}`;
+    const blurId = `gh-pblur-${uid}`;
+
+    const rawName = (item.name || '').trim() || 'Project';
+    const cleanName = escapeXml(rawName);
+    const cleanCat = escapeXml((item.category || '').trim() || 'Web App');
+    const cleanYear = escapeXml((item.year || '').trim());
+    const maxDescChars = isHalf ? 36 : 92;
+    const rawDesc = (item.desc || '').trim() || 'Built with clean architecture and thoughtful design.';
     const trimmedDesc = rawDesc.length > maxDescChars ? rawDesc.slice(0, maxDescChars - 1).trim() + '\u2026' : rawDesc;
     const cleanDesc = escapeXml(trimmedDesc);
-    const cleanImg = (imgHref || '').trim();
+    const cleanImg = (item.coverDataUrl || item.coverValue || '').trim();
     const footerY = pad + previewH + 18;
     const arrowX = w - 52;
 
+    const iconHref = item.iconDataUrl || (isImageHref(item.iconValue) ? item.iconValue.trim() : '');
+    const iconPath = iconHref ? null : getIconPath(item.iconValue || '');
+    const monogram = escapeXml(getProjectMonogram(rawName));
+
+    let iconDefs = '';
+    let iconBadgeContent = '';
+    if (iconHref) {
+      iconDefs = `    <clipPath id="${iconClipId}"><rect width="38" height="38" rx="10"/></clipPath>\n`;
+      iconBadgeContent = `    <rect width="38" height="38" rx="10" fill="${p.surfaceHigh}"/>
+    <image href="${escapeXml(iconHref)}" x="0" y="0" width="38" height="38" clip-path="url(#${iconClipId})" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="38" height="38" rx="10" fill="none" stroke="${p.border}" stroke-width="1"/>`;
+    } else if (iconPath) {
+      iconBadgeContent = `    <rect width="38" height="38" rx="10" fill="${p.surfaceHigh}" stroke="${p.border}" stroke-width="1"/>
+    <g transform="translate(9, 9) scale(0.833)"><path d="${iconPath}" fill="${p.accent}"/></g>`;
+    } else {
+      iconBadgeContent = `    <rect width="38" height="38" rx="10" fill="${p.surfaceHigh}" stroke="${p.border}" stroke-width="1"/>
+    <text x="19" y="24" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="${p.accent}">${monogram}</text>`;
+    }
+
     const coverContent = cleanImg
       ? `  <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="${p.surfaceAlt}"/>
-  <image href="${escapeXml(cleanImg)}" x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" clip-path="url(#gh-proj-clip)" preserveAspectRatio="xMidYMid slice"/>
+  <image href="${escapeXml(cleanImg)}" x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>
   <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="none" stroke="${p.borderSubtle}" stroke-width="1"/>`
       : `  <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="${p.surfaceAlt}" stroke="${p.borderSubtle}" stroke-width="1"/>
-  <g clip-path="url(#gh-proj-clip)" filter="url(#gh-proj-blur)">
+  <g clip-path="url(#${clipId})" filter="url(#${blurId})">
     <ellipse cx="${Math.round(w * 0.25)}" cy="${Math.round(previewH * 0.35)}" rx="${Math.round(w * 0.28)}" ry="70" fill="${p.lilac}" opacity="${p.isDark ? '0.20' : '0.25'}"/>
     <ellipse cx="${Math.round(w * 0.78)}" cy="${Math.round(previewH * 0.75)}" rx="${Math.round(w * 0.24)}" ry="65" fill="${p.pink}" opacity="${p.isDark ? '0.18' : '0.22'}"/>
   </g>
-  <rect x="${pad + 22}" y="${pad + 20}" width="${innerW - 44}" height="${previewH - 20}" rx="10" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
-  <circle cx="${pad + 38}" cy="${pad + 36}" r="4" fill="${p.pink}"/>
-  <circle cx="${pad + 52}" cy="${pad + 36}" r="4" fill="${p.secondary}"/>
-  <circle cx="${pad + 66}" cy="${pad + 36}" r="4" fill="${p.mint}"/>
+  <rect x="${pad + 20}" y="${pad + 18}" width="${innerW - 40}" height="${previewH - 18}" rx="10" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <circle cx="${pad + 36}" cy="${pad + 34}" r="4" fill="${p.pink}"/>
+  <circle cx="${pad + 50}" cy="${pad + 34}" r="4" fill="${p.secondary}"/>
+  <circle cx="${pad + 64}" cy="${pad + 34}" r="4" fill="${p.mint}"/>
   <text x="${Math.round(w / 2)}" y="${Math.round(pad + previewH * 0.56)}" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="${isHalf ? 22 : 30}" font-weight="700" letter-spacing="-0.03em" fill="${p.text}">${cleanName}</text>
-  <text x="${Math.round(w / 2)}" y="${Math.round(pad + previewH * 0.56 + 24)}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="${p.textDim}">${cleanCat}</text>`;
+  <text x="${Math.round(w / 2)}" y="${Math.round(pad + previewH * 0.56 + 22)}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="${p.textDim}">${cleanCat}</text>`;
+
+    const titleLine = isHalf
+      ? `    <text x="50" y="16" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="600" fill="${p.text}">${cleanName}</text>`
+      : `    <text x="50" y="16" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5">
+      <tspan font-weight="600" fill="${p.text}">${cleanName}</tspan>
+      <tspan dx="5" font-weight="400" fill="${p.textDim}">\u00b7 ${cleanCat}</tspan>
+    </text>`;
+
+    const rightBadge = isHalf && cleanYear
+      ? `  <text x="${w - 18}" y="${footerY + 16}" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="500" fill="${p.textDim}">${cleanYear}</text>`
+      : `  <g transform="translate(${arrowX}, ${footerY + 2})">
+    <circle cx="17" cy="17" r="17" fill="${p.surfaceAlt}" stroke="${p.border}" stroke-width="1"/>
+    <path d="M13 21L21 13M21 13H15M21 13V19" stroke="${p.textMuted}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" fill="none">
   <defs>
-    <clipPath id="gh-proj-clip"><rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12"/></clipPath>
-    <filter id="gh-proj-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="44"/></filter>
+    <clipPath id="${clipId}"><rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12"/></clipPath>
+${iconDefs}    <filter id="${blurId}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="44"/></filter>
   </defs>
   <rect width="${w}" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
 ${coverContent}
   <g transform="translate(18, ${footerY})">
-    <rect width="38" height="38" rx="10" fill="${p.surfaceHigh}" stroke="${p.border}" stroke-width="1"/>
-    <text x="19" y="25" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" font-weight="700" fill="${p.accent}">${initial}</text>
-    <text x="50" y="16" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5">
-      <tspan font-weight="600" fill="${p.text}">${cleanName}</tspan>
-      <tspan dx="5" font-weight="400" fill="${p.textDim}">\u00b7 ${cleanCat}</tspan>
-    </text>
+${iconBadgeContent}
+${titleLine}
     <text x="50" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" font-weight="400" fill="${p.textDim}">${cleanDesc}</text>
   </g>
-  <g transform="translate(${arrowX}, ${footerY + 2})">
-    <circle cx="17" cy="17" r="17" fill="${p.surfaceAlt}" stroke="${p.border}" stroke-width="1"/>
-    <path d="M13 21L21 13M21 13H15M21 13V19" stroke="${p.textMuted}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+${rightBadge}
 </svg>`;
+  }
+
+  function renderProjectBentoCanvas() {
+    if (!projectBentoCanvas) return;
+    const workTitle = workTitleInput ? workTitleInput.value : 'Selected work.';
+    const workSub = workSubtitleInput ? workSubtitleInput.value : 'Products, client sites and open source.';
+
+    projectBentoCanvas.innerHTML = '';
+
+    const headerWrap = document.createElement('div');
+    headerWrap.className = 'bento-header-preview';
+    headerWrap.innerHTML = buildSectionHeaderSvg(workTitle, workSub, currentStudioTheme);
+    projectBentoCanvas.appendChild(headerWrap);
+
+    const gridWrap = document.createElement('div');
+    gridWrap.className = 'bento-grid';
+
+    projectItems.forEach((proj, idx) => {
+      const tile = document.createElement('div');
+      const isSelected = proj.id === selectedProjectId;
+      tile.className = `bento-tile ${proj.width === 'full' ? 'span-full' : 'span-half'}${isSelected ? ' selected' : ''}`;
+      tile.draggable = true;
+      tile.dataset.projId = proj.id;
+
+      const controls = document.createElement('div');
+      controls.className = 'bento-tile-controls';
+
+      const grip = document.createElement('span');
+      grip.className = 'bento-drag-handle';
+      grip.textContent = '\u22ee\u22ee';
+      grip.title = 'Drag to reorder';
+      controls.appendChild(grip);
+
+      const spanBtn = document.createElement('button');
+      spanBtn.type = 'button';
+      spanBtn.className = 'bento-ctrl-btn';
+      spanBtn.textContent = proj.width === 'full' ? '100%' : '49%';
+      spanBtn.title = 'Toggle full (100%) or half (49%) card width';
+      spanBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedProjectId = proj.id;
+        toggleProjectWidth(proj.id);
+      });
+      controls.appendChild(spanBtn);
+
+      const prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'bento-ctrl-btn';
+      prevBtn.textContent = '\u2190';
+      prevBtn.title = 'Move earlier';
+      prevBtn.disabled = idx === 0;
+      prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedProjectId = proj.id;
+        moveProjectByOffset(proj.id, -1);
+      });
+      controls.appendChild(prevBtn);
+
+      const nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'bento-ctrl-btn';
+      nextBtn.textContent = '\u2192';
+      nextBtn.title = 'Move later';
+      nextBtn.disabled = idx === projectItems.length - 1;
+      nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedProjectId = proj.id;
+        moveProjectByOffset(proj.id, 1);
+      });
+      controls.appendChild(nextBtn);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'bento-ctrl-btn danger';
+      removeBtn.textContent = '\u00d7';
+      removeBtn.title = 'Remove project';
+      removeBtn.disabled = projectItems.length <= 1;
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteProjectById(proj.id);
+      });
+      controls.appendChild(removeBtn);
+
+      const svgHolder = document.createElement('div');
+      svgHolder.className = 'bento-tile-svg';
+      svgHolder.innerHTML = buildProjectCardSvg(proj, currentStudioTheme);
+
+      tile.appendChild(controls);
+      tile.appendChild(svgHolder);
+
+      tile.addEventListener('click', () => {
+        if (selectedProjectId !== proj.id) {
+          selectedProjectId = proj.id;
+          syncProjectInspectorFromState();
+          updateStudioPreview();
+        }
+      });
+
+      tile.addEventListener('dragstart', (e) => {
+        dragProjectId = proj.id;
+        tile.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', proj.id);
+        }
+      });
+
+      tile.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (dragProjectId && dragProjectId !== proj.id) {
+          tile.classList.add('drag-over');
+        }
+      });
+
+      tile.addEventListener('dragleave', () => {
+        tile.classList.remove('drag-over');
+      });
+
+      tile.addEventListener('drop', (e) => {
+        e.preventDefault();
+        tile.classList.remove('drag-over');
+        const sourceId = dragProjectId || (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '');
+        if (sourceId && sourceId !== proj.id) {
+          reorderProjects(sourceId, proj.id);
+        }
+      });
+
+      tile.addEventListener('dragend', () => {
+        dragProjectId = null;
+        tile.classList.remove('dragging');
+        tile.classList.remove('drag-over');
+      });
+
+      gridWrap.appendChild(tile);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'bento-add-tile';
+    addBtn.textContent = '+ Add Project Card to Bento Layout';
+    addBtn.addEventListener('click', addNewProject);
+    gridWrap.appendChild(addBtn);
+
+    projectBentoCanvas.appendChild(gridWrap);
   }
 
   function buildSocialPillSvg(item, theme) {
@@ -1348,15 +1848,7 @@ ${linesSvg}
       );
     }
     if (type === 'project') {
-      const imgHref = projImageDataUrl || (projImageInput ? projImageInput.value : '');
-      return buildProjectCardSvg(
-        projNameInput ? projNameInput.value : 'ghgraph',
-        projCatInput ? projCatInput.value : '',
-        projDescInput ? projDescInput.value : '',
-        imgHref,
-        currentProjWidth,
-        theme
-      );
+      return buildProjectCardSvg(getSelectedProject(), theme);
     }
     if (type === 'contact') {
       return buildContactCardSvg(
@@ -1385,7 +1877,11 @@ ${linesSvg}
   function getAssetPrefixByType(type) {
     if (type === 'hero') return 'ghgraph-hero';
     if (type === 'stack') return 'ghgraph-stack';
-    if (type === 'project') return `ghgraph-project-${slugifyName(projNameInput ? projNameInput.value : 'project')}`;
+    if (type === 'project') {
+      const sel = getSelectedProject();
+      const idx = projectItems.findIndex(p => p.id === (sel ? sel.id : ''));
+      return getProjectAssetSlug(sel, idx >= 0 ? idx : 0);
+    }
     if (type === 'contact') return 'ghgraph-contact';
     if (type === 'quote') return 'ghgraph-quote';
     return 'ghgraph';
@@ -1418,6 +1914,26 @@ ${linesSvg}
 </a>`;
   }
 
+  function buildProjectSectionMarkdown() {
+    const title = (workTitleInput ? workTitleInput.value : 'Selected work.').trim() || 'Selected work.';
+    const sub = (workSubtitleInput ? workSubtitleInput.value : 'Products, client sites and open source.').trim();
+    const headerBlock = `<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/ghgraph-work-header-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/ghgraph-work-header-light.svg">
+  <img src="assets/ghgraph-work-header-dark.svg" alt="${title} ${sub}" width="100%">
+</picture>`;
+
+    const cardLines = projectItems.map((proj, idx) => {
+      const slug = getProjectAssetSlug(proj, idx);
+      const href = (proj.url || '').trim() || FIXED_SITE_URL;
+      const wAttr = proj.width === 'half' ? '49%' : '100%';
+      const alt = `${(proj.name || 'Project').trim()}: ${(proj.desc || '').trim()}`;
+      return `<a href="${href}"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/${slug}-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/${slug}-light.svg"><img src="assets/${slug}-dark.svg" alt="${alt}" width="${wAttr}"></picture></a>`;
+    }).join('\n');
+
+    return `${headerBlock}\n\n${cardLines}`;
+  }
+
   function buildContactPillsMarkdown() {
     const title = (contactTitleInput ? contactTitleInput.value : 'Say hi.').trim() || 'Say hi.';
     const sub = (contactSubtitleInput ? contactSubtitleInput.value : '').trim();
@@ -1444,11 +1960,7 @@ ${linesSvg}
         return buildPictureSnippet(u, prefix, `${u}'s Tech Stack`, FIXED_SITE_URL, '100%');
       }
       if (type === 'project') {
-        const pName = (projNameInput ? projNameInput.value : 'Project').trim() || 'Project';
-        const pDesc = (projDescInput ? projDescInput.value : '').trim();
-        const pUrl = (projUrlInput ? projUrlInput.value : FIXED_SITE_URL).trim() || FIXED_SITE_URL;
-        const wAttr = currentProjWidth === 'half' ? '49%' : '100%';
-        return buildPictureSnippet(u, prefix, `${pName}: ${pDesc}`, pUrl, wAttr);
+        return buildProjectSectionMarkdown();
       }
       if (type === 'contact') {
         if (currentContactMode === 'pills') {
@@ -1468,15 +1980,24 @@ ${linesSvg}
     if (!studioSvgPreview) return;
     const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
     const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-    const svgCode = getActiveCardSvg(currentStudioTheme);
-    studioSvgPreview.innerHTML = svgCode;
+    const isProjectTab = currentStudioTab === 'project';
+
+    if (isProjectTab && projectBentoCanvas) {
+      studioSvgPreview.setAttribute('hidden', '');
+      projectBentoCanvas.removeAttribute('hidden');
+      renderProjectBentoCanvas();
+    } else {
+      if (projectBentoCanvas) projectBentoCanvas.setAttribute('hidden', '');
+      studioSvgPreview.removeAttribute('hidden');
+      studioSvgPreview.innerHTML = getActiveCardSvg(currentStudioTheme);
+    }
 
     if (studioPreviewTag) {
       const tagMap = {
         heatmap: 'Animated Heatmap Preview',
         hero: 'Hero Banner Preview (Static)',
         stack: 'Tech Stack Preview (Dynamic Simple Icons)',
-        project: currentProjWidth === 'half' ? 'Project Card Preview (49% Half Grid)' : 'Project Card Preview (100% Featured)',
+        project: `Interactive Bento Canvas (${projectItems.length} ${projectItems.length === 1 ? 'Project' : 'Projects'} · Drag to Reorder)`,
         contact: currentContactMode === 'pills' ? 'Contact Preview (Clickable Social Pills)' : 'Contact Card Preview (Unified SVG)',
         quote: 'Dev Quote Preview (M3 Expressive)'
       };
@@ -1496,7 +2017,12 @@ ${linesSvg}
     if (requiredFilesHint) {
       const files = [];
       embedTypes.forEach(t => {
-        if (t === 'contact' && currentContactMode === 'pills') {
+        if (t === 'project') {
+          files.push('<code>assets/ghgraph-work-header-{dark,light}.svg</code>');
+          projectItems.forEach((proj, idx) => {
+            files.push(`<code>assets/${getProjectAssetSlug(proj, idx)}-{dark,light}.svg</code>`);
+          });
+        } else if (t === 'contact' && currentContactMode === 'pills') {
           files.push('<code>assets/ghgraph-contact-header-{dark,light}.svg</code>');
           files.push('<code>assets/s-&lt;platform&gt;-{dark,light}.svg</code>');
         } else {
@@ -1661,6 +2187,19 @@ jobs:
   }
 
   function triggerSvgDownload(theme) {
+    if (currentStudioTab === 'project') {
+      const workTitle = workTitleInput ? workTitleInput.value : 'Selected work.';
+      const workSub = workSubtitleInput ? workSubtitleInput.value : 'Products, client sites and open source.';
+      const queue = [{ svg: buildSectionHeaderSvg(workTitle, workSub, theme), name: `ghgraph-work-header-${theme}.svg` }];
+      projectItems.forEach((proj, idx) => {
+        const slug = getProjectAssetSlug(proj, idx);
+        queue.push({ svg: buildProjectCardSvg(proj, theme), name: `${slug}-${theme}.svg` });
+      });
+      queue.forEach((entry, idx) => {
+        setTimeout(() => downloadSvgFile(entry.svg, entry.name), idx * 160);
+      });
+      return;
+    }
     if (currentStudioTab === 'contact' && currentContactMode === 'pills') {
       const title = contactTitleInput ? contactTitleInput.value : 'Say hi.';
       const sub = contactSubtitleInput ? contactSubtitleInput.value : '';
@@ -1679,10 +2218,21 @@ jobs:
   async function triggerKitDownload() {
     if (stackItemsInput) await syncDynamicTechIcons(stackItemsInput.value);
     if (contactItemsInput) await syncDynamicContactIcons(contactItemsInput.value);
+    await syncDynamicProjectIcons();
     const types = getSelectedKitTypes();
     const queue = [];
     types.forEach(type => {
-      if (type === 'contact' && currentContactMode === 'pills') {
+      if (type === 'project') {
+        const workTitle = workTitleInput ? workTitleInput.value : 'Selected work.';
+        const workSub = workSubtitleInput ? workSubtitleInput.value : 'Products, client sites and open source.';
+        queue.push({ svg: buildSectionHeaderSvg(workTitle, workSub, 'dark'), name: 'ghgraph-work-header-dark.svg' });
+        queue.push({ svg: buildSectionHeaderSvg(workTitle, workSub, 'light'), name: 'ghgraph-work-header-light.svg' });
+        projectItems.forEach((proj, idx) => {
+          const slug = getProjectAssetSlug(proj, idx);
+          queue.push({ svg: buildProjectCardSvg(proj, 'dark'), name: `${slug}-dark.svg` });
+          queue.push({ svg: buildProjectCardSvg(proj, 'light'), name: `${slug}-light.svg` });
+        });
+      } else if (type === 'contact' && currentContactMode === 'pills') {
         const title = contactTitleInput ? contactTitleInput.value : 'Say hi.';
         const sub = contactSubtitleInput ? contactSubtitleInput.value : '';
         queue.push({ svg: buildSectionHeaderSvg(title, sub, 'dark'), name: 'ghgraph-contact-header-dark.svg' });
@@ -1738,6 +2288,10 @@ jobs:
 
     if (cardId === 'stack' && stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
     if (cardId === 'contact' && contactItemsInput) syncDynamicContactIcons(contactItemsInput.value);
+    if (cardId === 'project') {
+      syncProjectInspectorFromState();
+      syncDynamicProjectIcons();
+    }
     updateStudioPreview();
   }
 
@@ -1772,9 +2326,11 @@ jobs:
   function openStudioModal() {
     if (profileStudioModal) {
       profileStudioModal.removeAttribute('hidden');
+      syncProjectInspectorFromState();
       updateStudioPreview();
       if (stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
       if (contactItemsInput) syncDynamicContactIcons(contactItemsInput.value);
+      syncDynamicProjectIcons();
     }
   }
 
@@ -1922,13 +2478,119 @@ jobs:
       });
     }
 
+    if (addProjectBtn) addProjectBtn.addEventListener('click', addNewProject);
+    if (dupProjectBtn) dupProjectBtn.addEventListener('click', duplicateSelectedProject);
+    if (delProjectBtn) {
+      delProjectBtn.addEventListener('click', () => {
+        const cur = getSelectedProject();
+        if (cur) deleteProjectById(cur.id);
+      });
+    }
+
+    if (projNameInput) {
+      projNameInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.name = projNameInput.value;
+        const idx = projectItems.findIndex(p => p.id === cur.id);
+        if (projEditingLabel) projEditingLabel.textContent = `Editing: ${cur.name || 'Untitled'} (${idx + 1} of ${projectItems.length})`;
+        updateProjectIconStatus();
+        updateStudioPreview();
+      });
+    }
+
+    if (projCatInput) {
+      projCatInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.category = projCatInput.value;
+        updateStudioPreview();
+      });
+    }
+
+    if (projDescInput) {
+      projDescInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.desc = projDescInput.value;
+        updateStudioPreview();
+      });
+    }
+
+    if (projUrlInput) {
+      projUrlInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.url = projUrlInput.value;
+        updateStudioPreview();
+      });
+    }
+
+    if (projYearInput) {
+      projYearInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.year = projYearInput.value;
+        updateStudioPreview();
+      });
+    }
+
+    if (projIconUploadBtn && projIconFile) {
+      projIconUploadBtn.addEventListener('click', () => projIconFile.click());
+      projIconFile.addEventListener('change', () => {
+        const f = projIconFile.files && projIconFile.files[0];
+        const cur = getSelectedProject();
+        if (!f || !cur) return;
+        resizeImageFileToDataUrl(f, 96, 96, 'image/png', 0.92, (dataUrl) => {
+          cur.iconDataUrl = dataUrl;
+          cur.iconValue = f.name;
+          if (projIconInput) projIconInput.value = f.name;
+          updateProjectIconStatus();
+          renderProjectIconPicker();
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (projIconClearBtn) {
+      projIconClearBtn.addEventListener('click', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.iconDataUrl = '';
+        cur.iconValue = '';
+        if (projIconInput) projIconInput.value = '';
+        if (projIconFile) projIconFile.value = '';
+        updateProjectIconStatus();
+        renderProjectIconPicker();
+        updateStudioPreview();
+      });
+    }
+
+    if (projIconInput) {
+      projIconInput.addEventListener('input', () => {
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.iconDataUrl = '';
+        cur.iconValue = projIconInput.value;
+        updateProjectIconStatus();
+        renderProjectIconPicker();
+        updateStudioPreview();
+        clearTimeout(projIconFetchTimer);
+        projIconFetchTimer = setTimeout(() => {
+          syncDynamicProjectIcons();
+        }, 320);
+      });
+    }
+
     if (projImageUploadBtn && projImageFile) {
       projImageUploadBtn.addEventListener('click', () => projImageFile.click());
       projImageFile.addEventListener('change', () => {
         const f = projImageFile.files && projImageFile.files[0];
-        if (!f) return;
+        const cur = getSelectedProject();
+        if (!f || !cur) return;
         resizeImageFileToDataUrl(f, 820, 420, 'image/jpeg', 0.85, (dataUrl) => {
-          projImageDataUrl = dataUrl;
+          cur.coverDataUrl = dataUrl;
+          cur.coverValue = f.name;
           if (projImageInput) projImageInput.value = f.name;
           if (projImageClearBtn) projImageClearBtn.removeAttribute('hidden');
           updateStudioPreview();
@@ -1938,7 +2600,10 @@ jobs:
 
     if (projImageClearBtn) {
       projImageClearBtn.addEventListener('click', () => {
-        projImageDataUrl = '';
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.coverDataUrl = '';
+        cur.coverValue = '';
         if (projImageInput) projImageInput.value = '';
         if (projImageFile) projImageFile.value = '';
         projImageClearBtn.setAttribute('hidden', '');
@@ -1948,18 +2613,12 @@ jobs:
 
     if (projImageInput) {
       projImageInput.addEventListener('input', () => {
-        projImageDataUrl = '';
+        const cur = getSelectedProject();
+        if (!cur) return;
+        cur.coverDataUrl = '';
+        cur.coverValue = projImageInput.value;
         if (projImageClearBtn) projImageClearBtn.toggleAttribute('hidden', !projImageInput.value.trim());
         updateStudioPreview();
-      });
-    }
-
-    if (downloadWorkHeaderBtn) {
-      downloadWorkHeaderBtn.addEventListener('click', () => {
-        downloadSvgFile(buildSectionHeaderSvg('Selected work.', 'Products, client sites and open source.', 'dark'), 'ghgraph-work-header-dark.svg');
-        setTimeout(() => {
-          downloadSvgFile(buildSectionHeaderSvg('Selected work.', 'Products, client sites and open source.', 'light'), 'ghgraph-work-header-light.svg');
-        }, 180);
       });
     }
 
@@ -1967,17 +2626,21 @@ jobs:
       const pills = projWidthPills.querySelectorAll('.studio-pill');
       pills.forEach(pill => {
         pill.addEventListener('click', () => {
+          const cur = getSelectedProject();
+          if (!cur) return;
           pills.forEach(p => {
             p.classList.remove('active');
             p.setAttribute('aria-selected', 'false');
           });
           pill.classList.add('active');
           pill.setAttribute('aria-selected', 'true');
-          currentProjWidth = pill.dataset.width;
+          cur.width = pill.dataset.width;
           updateStudioPreview();
         });
       });
     }
+
+    syncProjectInspectorFromState();
 
     if (contactModePills) {
       const pills = contactModePills.querySelectorAll('.studio-pill');
@@ -2046,7 +2709,7 @@ jobs:
     [
       heroNameInput, heroStatusInput, heroHeadline1Input, heroHeadline2Input,
       stackTitleInput, stackSubtitleInput,
-      projNameInput, projCatInput, projDescInput, projUrlInput,
+      workTitleInput, workSubtitleInput,
       contactTitleInput, contactSubtitleInput,
       quoteTextInput, quoteAuthorInput, quoteLabelInput
     ].forEach(el => {
