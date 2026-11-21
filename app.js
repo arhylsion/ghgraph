@@ -982,12 +982,11 @@ ${auroraBg}
   }
 
   function buildPictureSnippet(user, prefix, altText) {
-    const u = (user || '').trim() || 'username';
     return `<a href="${FIXED_SITE_URL}">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-light.svg">
-    <img alt="${altText}" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-dark.svg" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/${prefix}-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/${prefix}-light.svg">
+    <img alt="${altText}" src="assets/${prefix}-dark.svg" width="100%">
   </picture>
 </a>`;
   }
