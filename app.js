@@ -448,10 +448,18 @@
   const stackSubtitleInput = document.getElementById('stackSubtitleInput');
   const stackItemsInput = document.getElementById('stackItemsInput');
   const stackQuickPicks = document.getElementById('stackQuickPicks');
+  const stackIconStatus = document.getElementById('stackIconStatus');
   const studioPreviewTag = document.getElementById('studioPreviewTag');
   const studioSvgPreview = document.getElementById('studioSvgPreview');
   const snippetPanelTitle = document.getElementById('snippetPanelTitle');
   const snippetPanelDesc = document.getElementById('snippetPanelDesc');
+  const embedScopePills = document.getElementById('embedScopePills');
+  const kitChecklistRow = document.getElementById('kitChecklistRow');
+  const includeHeroCheck = document.getElementById('includeHeroCheck');
+  const includeHeatmapCheck = document.getElementById('includeHeatmapCheck');
+  const includeStackCheck = document.getElementById('includeStackCheck');
+  const downloadKitBtn = document.getElementById('downloadKitBtn');
+  const requiredFilesHint = document.getElementById('requiredFilesHint');
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
   const workflowYamlOutput = document.getElementById('workflowYamlOutput');
   const workflowPanel = document.getElementById('workflowPanel');
@@ -459,16 +467,19 @@
   const downloadDarkSvgBtn = document.getElementById('downloadDarkSvgBtn');
   const downloadLightSvgBtn = document.getElementById('downloadLightSvgBtn');
   const copySvgRawBtn = document.getElementById('copySvgRawBtn');
-  const copyFullReadmeBtn = document.getElementById('copyFullReadmeBtn');
 
   const FIXED_SITE_URL = 'https://arhylsion.github.io/ghgraph/';
+  const SIMPLE_ICONS_CDN = 'https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/';
   const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   let currentStudioTab = 'heatmap';
   let currentStudioTheme = 'dark';
   let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
+  let currentEmbedScope = 'kit';
   let fetchedState = null;
+  let iconFetchTimer = null;
+  const remoteIconCache = new Map();
 
   function escapeXml(str) {
     return String(str)
@@ -662,66 +673,66 @@ ${auroraBg}
 </svg>`;
   }
 
-  const TECH_ICONS = {
-    typescript: '<rect x="2" y="2" width="20" height="20" rx="3.5" fill="currentColor"/><path d="M12.6 11.8h-2.5v7.4H8.3v-7.4H5.8V10.2h6.8v1.6zm1.4 5.9c.7.4 1.6.7 2.5.7 1 0 1.6-.4 1.6-1 0-.6-.5-.9-1.6-1.3-1.5-.5-2.5-1.3-2.5-2.6 0-1.5 1.3-2.6 3.2-2.6 1 0 1.8.2 2.4.5l-.5 1.5c-.5-.2-1.1-.4-1.9-.4-.9 0-1.4.4-1.4.9 0 .6.5.8 1.7 1.3 1.6.6 2.4 1.3 2.4 2.7 0 1.5-1.2 2.7-3.5 2.7-1.1 0-2.1-.3-2.8-.7l.4-1.7z" fill="var(--ic-cut)"/>',
-    ts: 'ALIAS:typescript',
-    javascript: '<rect x="2" y="2" width="20" height="20" rx="3.5" fill="currentColor"/><path d="M11.6 16.4c0 2-1.2 3-3 3-1.1 0-1.9-.3-2.4-.9l.9-1.3c.4.4.8.6 1.4.6.8 0 1.3-.4 1.3-1.5V10.2h1.8v6.2zm2.2 1.3c.6.4 1.5.7 2.4.7 1 0 1.6-.4 1.6-1 0-.6-.4-.9-1.6-1.3-1.5-.5-2.4-1.3-2.4-2.6 0-1.5 1.2-2.6 3.1-2.6 1 0 1.8.2 2.3.5l-.5 1.5c-.5-.2-1.1-.4-1.8-.4-.9 0-1.4.4-1.4.9 0 .6.5.8 1.7 1.3 1.5.6 2.3 1.3 2.3 2.7 0 1.5-1.2 2.7-3.4 2.7-1.1 0-2.1-.3-2.7-.7l.4-1.7z" fill="var(--ic-cut)"/>',
-    js: 'ALIAS:javascript',
-    python: '<path d="M11.9 2C7.3 2 7.6 4 7.6 4v2.1h4.4v.6H5.9S3 6.4 3 11.1c0 4.7 2.5 4.5 2.5 4.5h1.5v-2.2s-.1-2.5 2.5-2.5h4.3s2.4 0 2.4-2.3V4.4S16.5 2 11.9 2zm-2.3 1.4a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z" fill="currentColor"/><path d="M12.1 22c4.6 0 4.3-2 4.3-2v-2.1H12v-.6h6.1s2.9.3 2.9-4.4c0-4.7-2.5-4.5-2.5-4.5H17v2.2s.1 2.5-2.5 2.5h-4.3s-2.4 0-2.4 2.3v4.2S7.5 22 12.1 22zm2.3-1.4a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8z" fill="currentColor" opacity="0.82"/>',
-    py: 'ALIAS:python',
-    react: '<circle cx="12" cy="12" r="2.1" fill="currentColor"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" stroke="currentColor" stroke-width="1.5" fill="none"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(120 12 12)"/>',
-    'react native': 'ALIAS:react',
-    'next.js': '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8.5 16.5V8.2l8.2 10.6M15.4 8.2v5.4" stroke="var(--ic-cut)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
-    nextjs: 'ALIAS:next.js',
-    'node.js': '<path d="M12 2.2l8.5 4.9v9.8L12 21.8 3.5 16.9V7.1L12 2.2z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M9.4 15.2V9.3l4.6 5.9V9.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
-    nodejs: 'ALIAS:node.js',
-    node: 'ALIAS:node.js',
-    vite: '<path d="M13.2 2L4.5 13.4h6.1L9.6 22l9.9-12.1h-6.3L13.2 2z" fill="currentColor"/>',
-    astro: '<path d="M12 2.4L6.2 18.2l3.4-1.4 2.4-6.4 2.4 6.4 3.4 1.4L12 2.4zm0 14.3c-1.3 0-2.4.7-2.6 1.8.8.9 1.6 1.8 2.6 3.1 1-1.3 1.8-2.2 2.6-3.1-.2-1.1-1.3-1.8-2.6-1.8z" fill="currentColor"/>',
-    'tailwind css': '<path d="M12 6c-2.7 0-4.3 1.3-5 4 1-1.3 2.2-1.8 3.5-1.5.8.2 1.3.7 1.9 1.3 1 1 2.1 2.2 4.6 2.2 2.7 0 4.3-1.3 5-4-1 1.3-2.2 1.8-3.5 1.5-.8-.2-1.3-.7-1.9-1.3C15.6 7.2 14.5 6 12 6zm-5 6c-2.7 0-4.3 1.3-5 4 1-1.3 2.2-1.8 3.5-1.5.8.2 1.3.7 1.9 1.3 1 1 2.1 2.2 4.6 2.2 2.7 0 4.3-1.3 5-4-1 1.3-2.2 1.8-3.5 1.5-.8-.2-1.3-.7-1.9-1.3C10.6 13.2 9.5 12 7 12z" fill="currentColor"/>',
-    tailwind: 'ALIAS:tailwind css',
-    tailwindcss: 'ALIAS:tailwind css',
-    vue: '<path d="M2.5 4h4.2L12 13.2 17.3 4h4.2L12 20.5 2.5 4zm4.8 0h2.8L12 7.4 13.9 4h2.8L12 12.1 7.3 4z" fill="currentColor"/>',
-    'vue.js': 'ALIAS:vue',
-    svelte: '<path d="M16.9 3.6c-1.8-1.5-4.5-1.4-6.2.2L6.2 8.2c-1.4 1.4-1.7 3.5-.7 5.2l.4.6-.5.8c-.9 1.6-.6 3.7.8 4.9 1.8 1.5 4.5 1.4 6.2-.2l4.5-4.4c1.4-1.4 1.7-3.5.7-5.2l-.4-.6.5-.8c.9-1.6.6-3.7-.8-4.9z" stroke="currentColor" stroke-width="1.8" fill="none"/>',
-    postgresql: '<ellipse cx="12" cy="6.2" rx="7.2" ry="3.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.8 6.2v11.6c0 1.8 3.2 3.2 7.2 3.2s7.2-1.4 7.2-3.2V6.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.8 12c0 1.8 3.2 3.2 7.2 3.2s7.2-1.4 7.2-3.2" stroke="currentColor" stroke-width="1.5" fill="none"/>',
-    postgres: 'ALIAS:postgresql',
-    supabase: '<path d="M13.4 2.4c.5-.6 1.5-.3 1.5.5v7.6h5.1c.8 0 1.2.9.7 1.5l-10.1 9.6c-.5.6-1.5.3-1.5-.5v-7.6H4c-.8 0-1.2-.9-.7-1.5l10.1-9.6z" fill="currentColor"/>',
-    firebase: '<path d="M5.2 17.8L8.1 3.8c.1-.6.9-.7 1.2-.2l2.8 5.2 3.4-3.3c.5-.5 1.3-.2 1.4.5l1.9 11.8-6.8 3.8-6.8-3.8z" fill="currentColor"/>',
-    mongodb: '<path d="M12 2.2c2.8 3.6 4.8 7 4.8 10.6 0 3.7-2 6.5-4.3 7.6v1.4h-1v-1.4C9.2 19.3 7.2 16.5 7.2 12.8 7.2 9.2 9.2 5.8 12 2.2z" fill="currentColor"/>',
-    mongo: 'ALIAS:mongodb',
-    redis: '<path d="M12 3.5l9 4.2-9 4.2-9-4.2 9-4.2zm-9 8.5l9 4.2 9-4.2m-18 4.2l9 4.2 9-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-    docker: '<path d="M13.5 9.2h2.3v2.2h-2.3V9.2zm-2.9 0h2.3v2.2h-2.3V9.2zm-2.9 0H10v2.2H7.7V9.2zm2.9-2.8h2.3v2.2h-2.3V6.4zm2.9 0h2.3v2.2h-2.3V6.4zm7.4 4.3c-.6-.4-1.8-.5-2.6-.3-.2-.9-.8-1.7-1.6-2.2l-.4-.2-.2.4c-.4.7-.5 1.8-.2 2.6-.4.2-1 .5-1.8.5H3.2l-.1.5c-.2 1.6.1 3.3.9 4.7 1.1 1.8 2.9 2.7 5.4 2.7 4.5 0 7.9-2.1 9.5-6.1.7 0 2.1.1 2.8-1.4l.2-.4-.9-.8z" fill="currentColor"/>',
-    kubernetes: '<circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M3.5 7.5l2.6 1.5M17.9 15l2.6 1.5M20.5 7.5l-2.6 1.5M6.1 15l-2.6 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
-    k8s: 'ALIAS:kubernetes',
-    git: '<circle cx="7" cy="6" r="2.2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="7" cy="18" r="2.2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M7 8.2v7.6M17 12.2c0 3.2-3 4.8-7.8 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
-    github: '<path d="M12 2.2C6.5 2.2 2 6.7 2 12.2c0 4.4 2.9 8.2 6.8 9.5.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5 4-1.3 6.8-5.1 6.8-9.5 0-5.5-4.5-10-10-10z" fill="currentColor"/>',
-    linux: '<rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M7.5 9.5l3 2.5-3 2.5M12.5 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
-    cursor: '<path d="M12 2.2L20.5 7v10L12 21.8 3.5 17V7L12 2.2z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M12 12l8.5-5M12 12v9.8M12 12L3.5 7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.2L20.5 7 12 12 3.5 7 12 2.2z" fill="currentColor" opacity="0.35"/>',
-    claude: '<path d="M12 2.2v6.6m0 6.4v6.6M2.2 12h6.6m6.4 0h6.6M5.1 5.1l4.7 4.7m4.4 4.4l4.7 4.7M18.9 5.1l-4.7 4.7m-4.4 4.4l-4.7 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    openai: '<circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 3.8v16.4M4.9 7.9l14.2 8.2M19.1 7.9L4.9 16.1" stroke="currentColor" stroke-width="1.5"/>',
-    n8n: '<circle cx="5.5" cy="12" r="2.3" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="2.3" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="18.5" cy="7.5" r="2.3" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="18.5" cy="16.5" r="2.3" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M7.8 12h1.9m4.5-.8l2.2-2.2m-2.2 3.8l2.2 2.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
-    expo: '<path d="M4.2 19.2L10.8 5.2c.5-1 1.9-1 2.4 0l6.6 14h-3.1L12 9.4l-4.7 9.8H4.2z" fill="currentColor"/>',
-    tanstack: '<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 18v-6.5M12 11.5c-1.8-2.2-4.2-2-5.2-.8M12 11.5c1.8-2.2 4.2-2 5.2-.8M12 11.5c0-2.5 1.2-4 2.8-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
-    figma: '<path d="M9 3h3v6H9a3 3 0 1 1 0-6zm3 0h3a3 3 0 1 1 0 6h-3V3zm0 6h3a3 3 0 1 1 0 6h-3V9zm-3 0h3v6H9a3 3 0 1 1 0-6zm0 6h3v3a3 3 0 1 1-3-3z" stroke="currentColor" stroke-width="1.6" fill="none"/>',
-    vercel: '<path d="M12 3.5L21 19.5H3L12 3.5z" fill="currentColor"/>',
-    cloudflare: '<path d="M17.5 18H7.2a4.2 4.2 0 0 1-.5-8.4A5.8 5.8 0 0 1 18 10.7a3.6 3.6 0 0 1-.5 7.3z" fill="currentColor"/>',
-    aws: '<path d="M5 15.5c3.8 2.8 10.2 2.8 14 0M16.8 14.3l2.6.8-.8 2.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M7 11.5l1.8-5h1.4l1.8 5M7.6 9.9h3.8M13.5 6.5l1.3 5 1.4-4 1.4 4 1.3-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-    go: '<path d="M10.5 12h4.2v2.4a3.5 3.5 0 1 1-1.2-5.5M18 12a3 3 0 1 0 0 .1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>',
-    golang: 'ALIAS:go',
-    rust: '<circle cx="12" cy="12" r="6.2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    graphql: '<polygon points="12,3 19.8,7.5 19.8,16.5 12,21 4.2,16.5 4.2,7.5" stroke="currentColor" stroke-width="1.6" fill="none"/><polygon points="12,4.5 18.8,16 5.2,16" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="12" cy="3" r="1.6" fill="currentColor"/><circle cx="19.8" cy="7.5" r="1.6" fill="currentColor"/><circle cx="19.8" cy="16.5" r="1.6" fill="currentColor"/><circle cx="12" cy="21" r="1.6" fill="currentColor"/><circle cx="4.2" cy="16.5" r="1.6" fill="currentColor"/><circle cx="4.2" cy="7.5" r="1.6" fill="currentColor"/>',
-    prisma: '<path d="M5.2 17.5L11.6 3.6c.4-.8 1.5-.8 1.9 0l5.6 15.2c.3.7-.2 1.5-.9 1.6l-11.8 1.2c-.8.1-1.5-.7-1.2-1.5zm6.9-10.2L8.4 18.6l7.8-.8-4.1-10.5z" fill="currentColor"/>',
-    laravel: '<path d="M4 6.5l4-2.2 4 2.2v4.6l4 2.2 4-2.2v4.6l-8 4.5-8-4.5V6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/>',
-    unity: '<path d="M12 2.5l8 4.6v9.2l-8 4.6-8-4.6V7.1l8-4.6zm0 4.2L7.5 9.3v5.4L12 17.3l4.5-2.6V9.3L12 6.7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/>',
-    swift: '<path d="M19.8 16.4c.5-2.3-.3-5.2-2.4-7.5-2.1-2.3-4.6-3.7-6.8-4.3 2.5 2.4 3.5 5 2.8 7.1-2.4-1.2-5-3.3-7.3-5.8 1.3 2.8 3.6 5.4 6.1 7.1-2.3.2-4.6-.4-7-1.8 1.8 3 4.8 5.2 8.4 5.5 2.2.2 4.3-.4 6.2-.3z" fill="currentColor"/>',
-    kotlin: '<path d="M4 4h16l-8 8 8 8H4V4z" fill="currentColor"/>',
-    php: '<ellipse cx="12" cy="12" rx="9.5" ry="5.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M7.5 14v-4h1.6a1.1 1.1 0 0 1 0 2.2H7.5m4.2 1.8v-4m0 2h2v2m2.2 0v-4h1.6a1.1 1.1 0 0 1 0 2.2h-1.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-    'c#': '<path d="M12 2.5l8.2 4.7v9.5L12 21.5l-8.2-4.8V7.2L12 2.5z" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M11.6 14.8a3.2 3.2 0 1 1 0-5.6M14.5 9.5v5m2.2-5v5m-3.2-3.5h4.2m-4.2 2h4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
-    csharp: 'ALIAS:c#',
-    'c++': '<path d="M12 2.5l8.2 4.7v9.5L12 21.5l-8.2-4.8V7.2L12 2.5z" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M10.8 14.6a3 3 0 1 1 0-5.2M13.5 12h2.4m-1.2-1.2v2.4M16.8 12h2.4M18 10.8v2.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
-    cpp: 'ALIAS:c++',
-    java: '<path d="M7 10h9v5a4 4 0 0 1-4 4h-1a4 4 0 0 1-4-4v-5zm9 1h1.5a2 2 0 0 1 0 4H16M9.5 4.5c0 1.2 1 1.8 1 3M13 4c0 1.2 1 1.8 1 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+  const SIMPLE_ICON_ALIASES = {
+    ts: 'typescript',
+    js: 'javascript',
+    py: 'python',
+    'react native': 'react',
+    nextjs: 'nextdotjs',
+    'next.js': 'nextdotjs',
+    nodejs: 'nodedotjs',
+    'node.js': 'nodedotjs',
+    node: 'nodedotjs',
+    tailwind: 'tailwindcss',
+    'tailwind css': 'tailwindcss',
+    'vue.js': 'vuedotjs',
+    vue: 'vuedotjs',
+    postgres: 'postgresql',
+    mongo: 'mongodb',
+    k8s: 'kubernetes',
+    golang: 'go',
+    'c++': 'cplusplus',
+    cpp: 'cplusplus',
+    'c#': 'csharp',
+    csharp: 'csharp',
+    '.net': 'dotnet',
+    dotnet: 'dotnet',
+    'three.js': 'threedotjs',
+    threejs: 'threedotjs',
+    vscode: 'visualstudiocode',
+    'vs code': 'visualstudiocode',
+    aws: 'amazonwebservices',
+    gcp: 'googlecloud',
+    'google cloud': 'googlecloud',
+    'github actions': 'githubactions',
+    'framer motion': 'framer',
+    shadcn: 'shadcnui',
+    'shadcn/ui': 'shadcnui',
+    html: 'html5',
+    css: 'css3',
+    sass: 'sass',
+    scss: 'sass',
+    shell: 'gnubash',
+    bash: 'gnubash',
+    arch: 'archlinux',
+    mysql: 'mysql',
+    sqlite: 'sqlite',
+    tensorflow: 'tensorflow',
+    pytorch: 'pytorch',
+    fastapi: 'fastapi',
+    express: 'express',
+    nestjs: 'nestjs',
+    remix: 'remix',
+    nuxt: 'nuxtdotjs',
+    'nuxt.js': 'nuxtdotjs',
+    bun: 'bun',
+    deno: 'deno',
+    flutter: 'flutter',
+    dart: 'dart',
+    elixir: 'elixir',
+    ruby: 'ruby',
+    rails: 'rubyonrails',
+    zig: 'zig'
   };
 
   const QUICK_PICK_TECHS = [
@@ -730,13 +741,56 @@ ${auroraBg}
     'Docker', 'Cursor', 'Claude', 'n8n', 'Go', 'Rust', 'Figma', 'Git'
   ];
 
-  function resolveTechIcon(name) {
-    const key = String(name || '').trim().toLowerCase();
-    let entry = TECH_ICONS[key];
-    if (entry && entry.startsWith('ALIAS:')) {
-      entry = TECH_ICONS[entry.slice(6)];
+  function toSimpleIconSlug(name) {
+    const clean = String(name || '').trim().toLowerCase();
+    if (!clean) return '';
+    if (SIMPLE_ICON_ALIASES[clean]) return SIMPLE_ICON_ALIASES[clean];
+    return clean
+      .replace(/\+/g, 'plus')
+      .replace(/#/g, 'sharp')
+      .replace(/\./g, 'dot')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  async function fetchIconPathBySlug(slug) {
+    if (!slug) return null;
+    if (remoteIconCache.has(slug)) return remoteIconCache.get(slug);
+    try {
+      const resp = await fetch(`${SIMPLE_ICONS_CDN}${encodeURIComponent(slug)}.svg`);
+      if (!resp.ok) {
+        remoteIconCache.set(slug, null);
+        return null;
+      }
+      const svgText = await resp.text();
+      const match = svgText.match(/<path[^>]*\bd="([^"]+)"/i);
+      const pathD = match ? match[1] : null;
+      remoteIconCache.set(slug, pathD);
+      return pathD;
+    } catch {
+      remoteIconCache.set(slug, null);
+      return null;
     }
-    return entry || null;
+  }
+
+  async function syncDynamicTechIcons(itemsCsv) {
+    const rawItems = (itemsCsv || '').split(',').map(s => s.trim()).filter(Boolean);
+    const items = rawItems.length ? rawItems : ['TypeScript', 'Python', 'React', 'Next.js', 'Node.js', 'Docker'];
+    const slugs = [...new Set(items.map(toSimpleIconSlug).filter(Boolean))];
+    const missing = slugs.filter(slug => !remoteIconCache.has(slug));
+
+    if (missing.length > 0) {
+      if (stackIconStatus) stackIconStatus.textContent = `Fetching ${missing.length} icon(s) from Simple Icons...`;
+      await Promise.all(missing.map(fetchIconPathBySlug));
+    }
+
+    const resolvedCount = items.filter(item => Boolean(remoteIconCache.get(toSimpleIconSlug(item)))).length;
+    if (stackIconStatus) {
+      stackIconStatus.textContent = `${resolvedCount}/${items.length} official icons loaded`;
+    }
+
+    if (currentStudioTab === 'stack') {
+      updateStudioPreview();
+    }
   }
 
   function buildHeroBannerSvg(name, status, headline1, headline2, theme) {
@@ -758,11 +812,9 @@ ${auroraBg}
     .gh-badge-link:hover rect { opacity: 0.85; }
     .gh-orb-a { animation: ghHeroDriftA 13s ease-in-out infinite alternate; }
     .gh-orb-b { animation: ghHeroDriftB 16s ease-in-out infinite alternate; }
-    .gh-pulse-dot { animation: ghDotPulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
     .gh-fade-up { opacity: 0; animation: ghHeroIn 0.55s cubic-bezier(0.2, 0, 0, 1) forwards; }
     @keyframes ghHeroDriftA { from { transform: translate(-25px, -14px); } to { transform: translate(65px, 18px); } }
     @keyframes ghHeroDriftB { from { transform: translate(25px, 12px); } to { transform: translate(-60px, -16px); } }
-    @keyframes ghDotPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.3); } }
     @keyframes ghHeroIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   </style>
   <rect width="820" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
@@ -775,7 +827,7 @@ ${auroraBg}
     <text x="22" y="29" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="${p.onAccentContainer}">${initial}</text>
   </g>
   <text x="90" y="47" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="${p.text}">${cleanName}</text>
-  <circle class="gh-pulse-dot" cx="95" cy="64" r="4" fill="${p.mint}"/>
+  <circle cx="95" cy="64" r="4" fill="${p.mint}"/>
   <text x="107" y="68" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="400" fill="${p.textDim}">${cleanStatus}</text>
   <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
     <g transform="translate(712, 28)">
@@ -806,8 +858,9 @@ ${auroraBg}
 
     items.forEach((item, idx) => {
       const label = escapeXml(item);
-      const iconMarkup = resolveTechIcon(item);
-      const hasIcon = Boolean(iconMarkup);
+      const slug = toSimpleIconSlug(item);
+      const pathD = remoteIconCache.get(slug) || null;
+      const hasIcon = Boolean(pathD);
       const textWidth = Math.round(item.length * 7.6);
       const pillW = hasIcon ? Math.max(84, textWidth + 52) : Math.max(66, textWidth + 32);
 
@@ -817,11 +870,8 @@ ${auroraBg}
       }
 
       const delay = (0.035 * idx).toFixed(3);
-      const renderedIcon = hasIcon
-        ? iconMarkup.replace(/currentColor/g, p.text).replace(/var\(--ic-cut\)/g, p.surfaceAlt)
-        : '';
       const iconGroup = hasIcon
-        ? `<g transform="translate(14, 10) scale(0.667)">${renderedIcon}</g>`
+        ? `<g transform="translate(14, 10) scale(0.667)"><path d="${pathD}" fill="${p.text}"/></g>`
         : '';
       const textX = hasIcon ? 36 : 16;
 
@@ -878,16 +928,17 @@ ${auroraBg}
         }
         stackItemsInput.value = list.join(', ');
         renderStackQuickPicks();
+        syncDynamicTechIcons(stackItemsInput.value);
         updateStudioPreview();
       });
       stackQuickPicks.appendChild(btn);
     });
   }
 
-  function getActiveCardSvg(themeOverride) {
+  function getCardSvgByType(type, themeOverride) {
     const theme = themeOverride || currentStudioTheme;
     const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
-    if (currentStudioTab === 'hero') {
+    if (type === 'hero') {
       return buildHeroBannerSvg(
         heroNameInput ? heroNameInput.value : 'Arhylsion',
         heroStatusInput ? heroStatusInput.value : '',
@@ -896,7 +947,7 @@ ${auroraBg}
         theme
       );
     }
-    if (currentStudioTab === 'stack') {
+    if (type === 'stack') {
       return buildTechStackSvg(
         stackTitleInput ? stackTitleInput.value : 'Tools.',
         stackSubtitleInput ? stackSubtitleInput.value : '',
@@ -908,10 +959,26 @@ ${auroraBg}
     return buildProfileCardSvg(username, theme, showStats, currentStudioAnim);
   }
 
-  function getActiveAssetPrefix() {
-    if (currentStudioTab === 'hero') return 'ghgraph-hero';
-    if (currentStudioTab === 'stack') return 'ghgraph-stack';
+  function getActiveCardSvg(themeOverride) {
+    return getCardSvgByType(currentStudioTab, themeOverride);
+  }
+
+  function getAssetPrefixByType(type) {
+    if (type === 'hero') return 'ghgraph-hero';
+    if (type === 'stack') return 'ghgraph-stack';
     return 'ghgraph';
+  }
+
+  function getActiveAssetPrefix() {
+    return getAssetPrefixByType(currentStudioTab);
+  }
+
+  function getSelectedKitTypes() {
+    const types = [];
+    if (!includeHeroCheck || includeHeroCheck.checked) types.push('hero');
+    if (!includeHeatmapCheck || includeHeatmapCheck.checked) types.push('heatmap');
+    if (!includeStackCheck || includeStackCheck.checked) types.push('stack');
+    return types.length ? types : [currentStudioTab];
   }
 
   function buildPictureSnippet(user, prefix, altText) {
@@ -925,12 +992,18 @@ ${auroraBg}
 </a>`;
   }
 
-  function buildFullReadmeMarkdown() {
-    const u = ((studioUsername ? studioUsername.value : '') || 'username').trim() || 'username';
-    const heroBlock = buildPictureSnippet(u, 'ghgraph-hero', `${u} — Profile Hero`);
-    const heatmapBlock = buildPictureSnippet(u, 'ghgraph', `${u}'s Contribution Heatmap`);
-    const stackBlock = buildPictureSnippet(u, 'ghgraph-stack', `${u}'s Tech Stack`);
-    return `${heroBlock}\n\n<br>\n\n${heatmapBlock}\n\n<br>\n\n${stackBlock}\n`;
+  function buildKitMarkdown(user, types) {
+    const u = (user || '').trim() || 'username';
+    const blocks = types.map(type => {
+      const prefix = getAssetPrefixByType(type);
+      const alt = type === 'hero'
+        ? `${u} — Profile Hero`
+        : type === 'stack'
+          ? `${u}'s Tech Stack`
+          : `${u}'s Contribution Heatmap`;
+      return buildPictureSnippet(u, prefix, alt);
+    });
+    return blocks.join('\n\n<br>\n\n');
   }
 
   function updateStudioPreview() {
@@ -944,21 +1017,28 @@ ${auroraBg}
       if (currentStudioTab === 'hero') {
         studioPreviewTag.textContent = 'Hero Banner Preview (Static)';
       } else if (currentStudioTab === 'stack') {
-        studioPreviewTag.textContent = 'Tech Stack Preview (Static)';
+        studioPreviewTag.textContent = 'Tech Stack Preview (Dynamic Simple Icons)';
       } else {
         studioPreviewTag.textContent = 'Animated Heatmap Preview';
       }
     }
 
+    const embedTypes = currentEmbedScope === 'kit' ? getSelectedKitTypes() : [currentStudioTab];
+
+    if (kitChecklistRow) {
+      kitChecklistRow.toggleAttribute('hidden', currentEmbedScope !== 'kit');
+    }
+
     if (readmeSnippetOutput) {
-      const u = username.trim() || 'username';
-      const prefix = getActiveAssetPrefix();
-      const alt = currentStudioTab === 'hero'
-        ? `${u} — Profile Hero`
-        : currentStudioTab === 'stack'
-          ? `${u}'s Tech Stack`
-          : `${u}'s Contribution Heatmap`;
-      readmeSnippetOutput.textContent = buildPictureSnippet(u, prefix, alt);
+      readmeSnippetOutput.textContent = buildKitMarkdown(username, embedTypes);
+    }
+
+    if (requiredFilesHint) {
+      const files = embedTypes.map(t => {
+        const pfx = getAssetPrefixByType(t);
+        return `<code>assets/${pfx}-{dark,light}.svg</code>`;
+      });
+      requiredFilesHint.innerHTML = `Required files in your repository: ${files.join(' · ')}`;
     }
 
     if (workflowPanel && staticNotePanel) {
@@ -1096,24 +1176,43 @@ jobs:
     }
   }
 
-  function triggerSvgDownload(theme) {
-    const svgCode = getActiveCardSvg(theme);
-    const prefix = getActiveAssetPrefix();
+  function downloadSvgFile(svgCode, filename) {
     const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${prefix}-${theme}.svg`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
+  function triggerSvgDownload(theme) {
+    downloadSvgFile(getActiveCardSvg(theme), `${getActiveAssetPrefix()}-${theme}.svg`);
+  }
+
+  async function triggerKitDownload() {
+    if (stackItemsInput) {
+      await syncDynamicTechIcons(stackItemsInput.value);
+    }
+    const types = getSelectedKitTypes();
+    const queue = [];
+    types.forEach(type => {
+      const prefix = getAssetPrefixByType(type);
+      queue.push({ svg: getCardSvgByType(type, 'dark'), name: `${prefix}-dark.svg` });
+      queue.push({ svg: getCardSvgByType(type, 'light'), name: `${prefix}-light.svg` });
+    });
+    queue.forEach((item, idx) => {
+      setTimeout(() => downloadSvgFile(item.svg, item.name), idx * 180);
+    });
+  }
+
   function openStudioModal() {
     if (profileStudioModal) {
       profileStudioModal.removeAttribute('hidden');
       updateStudioPreview();
+      if (stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
     }
   }
 
@@ -1153,9 +1252,36 @@ jobs:
           if (tabHeatmapControls) tabHeatmapControls.toggleAttribute('hidden', currentStudioTab !== 'heatmap');
           if (tabHeroControls) tabHeroControls.toggleAttribute('hidden', currentStudioTab !== 'hero');
           if (tabStackControls) tabStackControls.toggleAttribute('hidden', currentStudioTab !== 'stack');
+          if (currentStudioTab === 'stack' && stackItemsInput) {
+            syncDynamicTechIcons(stackItemsInput.value);
+          }
           updateStudioPreview();
         });
       });
+    }
+
+    if (embedScopePills) {
+      const pills = embedScopePills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentEmbedScope = pill.dataset.scope;
+          updateStudioPreview();
+        });
+      });
+    }
+
+    [includeHeroCheck, includeHeatmapCheck, includeStackCheck].forEach(chk => {
+      if (chk) chk.addEventListener('change', updateStudioPreview);
+    });
+
+    if (downloadKitBtn) {
+      downloadKitBtn.addEventListener('click', triggerKitDownload);
     }
 
     if (fetchContribBtn) {
@@ -1191,6 +1317,10 @@ jobs:
       stackItemsInput.addEventListener('input', () => {
         renderStackQuickPicks();
         updateStudioPreview();
+        clearTimeout(iconFetchTimer);
+        iconFetchTimer = setTimeout(() => {
+          syncDynamicTechIcons(stackItemsInput.value);
+        }, 320);
       });
     }
 
@@ -1266,22 +1396,6 @@ jobs:
           if (btnSpan) {
             const old = btnSpan.textContent;
             btnSpan.textContent = 'Copied!';
-            setTimeout(() => {
-              btnSpan.textContent = old;
-            }, 1800);
-          }
-        });
-      });
-    }
-
-    if (copyFullReadmeBtn) {
-      copyFullReadmeBtn.addEventListener('click', () => {
-        const md = buildFullReadmeMarkdown();
-        navigator.clipboard.writeText(md).then(() => {
-          const btnSpan = copyFullReadmeBtn.querySelector('span');
-          if (btnSpan) {
-            const old = btnSpan.textContent;
-            btnSpan.textContent = 'Copied Full README.md!';
             setTimeout(() => {
               btnSpan.textContent = old;
             }, 1800);

@@ -1266,6 +1266,68 @@ pre::-webkit-scrollbar-thumb:hover,
   margin-bottom: 6px;
 }
 
+.studio-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.studio-kit-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0 8px;
+}
+
+.studio-kit-bar[hidden] {
+  display: none !important;
+}
+
+.studio-kit-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-kit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-container);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.studio-kit-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.studio-files-hint {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin-top: -6px;
+}
+
+.studio-files-hint code {
+  color: var(--accent);
+  font-size: 0.74rem;
+}
+
 .studio-copy-full-btn {
   background-color: var(--accent-container);
   color: var(--on-accent-container);

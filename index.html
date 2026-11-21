@@ -604,9 +604,12 @@
         </div>
 
         <div class="studio-input-wrap studio-field-full">
-          <label for="stackItemsInput" class="studio-label">Technologies (comma-separated — auto-matches real brand icons)</label>
+          <div class="studio-label-row">
+            <label for="stackItemsInput" class="studio-label">Technologies (comma-separated — fetched dynamically from Simple Icons)</label>
+            <span id="stackIconStatus" class="studio-fetch-status"></span>
+          </div>
           <div class="studio-input-box">
-            <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="TypeScript, Python, React, Next.js, Node.js, Vite, Astro, Tailwind CSS, PostgreSQL, Supabase, Docker, Cursor, Claude, n8n, Git" placeholder="TypeScript, Python, React..." spellcheck="false">
+            <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="TypeScript, Python, React, Next.js, Node.js, Vite, Astro, Tailwind CSS, PostgreSQL, Supabase, Docker, Cursor, Claude, n8n, Git" placeholder="TypeScript, Python, Flutter, Rust, Kubernetes..." spellcheck="false">
           </div>
           <div id="stackQuickPicks" class="stack-quick-picks" aria-label="Quick toggle technologies"></div>
         </div>
@@ -652,12 +655,39 @@
           <div class="code-panel-heading-row">
             <div class="code-panel-heading">
               <span id="snippetPanelTitle" class="code-panel-title">1. Embed snippet for your <code>README.md</code></span>
-              <span id="snippetPanelDesc" class="code-panel-desc">Automatically adapts to GitHub Dark &amp; Light mode</span>
+              <span id="snippetPanelDesc" class="code-panel-desc">Follow-through 3-card layout with automatic GitHub Dark &amp; Light switching</span>
             </div>
-            <button id="copyFullReadmeBtn" class="studio-action-btn studio-copy-full-btn" type="button" title="Copy full 3-card README.md template">
-              <span>Copy Full 3-Card README.md</span>
+            <div id="embedScopePills" class="studio-pills" role="tablist" aria-label="Embed Scope">
+              <button class="studio-pill active" data-scope="kit" type="button" role="tab" aria-selected="true">Full Kit</button>
+              <button class="studio-pill" data-scope="single" type="button" role="tab" aria-selected="false">Active Card</button>
+            </div>
+          </div>
+
+          <div id="kitChecklistRow" class="studio-kit-bar">
+            <div class="studio-kit-toggles">
+              <label class="studio-kit-chip">
+                <input id="includeHeroCheck" type="checkbox" checked class="studio-checkbox">
+                <span>Hero Banner</span>
+              </label>
+              <label class="studio-kit-chip">
+                <input id="includeHeatmapCheck" type="checkbox" checked class="studio-checkbox">
+                <span>Heatmap</span>
+              </label>
+              <label class="studio-kit-chip">
+                <input id="includeStackCheck" type="checkbox" checked class="studio-checkbox">
+                <span>Tech Stack</span>
+              </label>
+            </div>
+            <button id="downloadKitBtn" class="studio-action-btn studio-copy-full-btn" type="button" title="Download Dark and Light SVG files for all selected cards">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download Selected SVGs</span>
             </button>
           </div>
+
           <div class="code-terminal-block">
             <pre><code id="readmeSnippetOutput"></code></pre>
             <button id="copyReadmeSnippetBtn" class="terminal-copy-btn" aria-label="Copy markdown snippet" title="Copy to clipboard">
@@ -665,6 +695,8 @@
               <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
           </div>
+
+          <div id="requiredFilesHint" class="studio-files-hint"></div>
         </div>
 
         <div id="workflowPanel" class="studio-code-item">
