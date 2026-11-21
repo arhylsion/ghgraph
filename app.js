@@ -428,11 +428,17 @@
   const profileStudioModal = document.getElementById('profileStudioModal');
   const openStudioBtn = document.getElementById('openStudioBtn');
   const closeStudioBtn = document.getElementById('closeStudioBtn');
-  const studioCardTabs = document.getElementById('studioCardTabs');
+  const studioSearchWrap = document.getElementById('studioSearchWrap');
+  const studioCardSearch = document.getElementById('studioCardSearch');
+  const studioActiveCardPill = document.getElementById('studioActiveCardPill');
+  const studioSearchMenu = document.getElementById('studioSearchMenu');
   const studioThemePills = document.getElementById('studioThemePills');
   const tabHeatmapControls = document.getElementById('tabHeatmapControls');
   const tabHeroControls = document.getElementById('tabHeroControls');
   const tabStackControls = document.getElementById('tabStackControls');
+  const tabProjectControls = document.getElementById('tabProjectControls');
+  const tabContactControls = document.getElementById('tabContactControls');
+  const tabQuoteControls = document.getElementById('tabQuoteControls');
   const studioUsername = document.getElementById('studioUsername');
   const fetchContribBtn = document.getElementById('fetchContribBtn');
   const usePaintedBtn = document.getElementById('usePaintedBtn');
@@ -446,11 +452,35 @@
   const heroStatusInput = document.getElementById('heroStatusInput');
   const heroHeadline1Input = document.getElementById('heroHeadline1Input');
   const heroHeadline2Input = document.getElementById('heroHeadline2Input');
+  const heroAvatarInput = document.getElementById('heroAvatarInput');
+  const heroAvatarFile = document.getElementById('heroAvatarFile');
+  const heroAvatarUploadBtn = document.getElementById('heroAvatarUploadBtn');
+  const heroAvatarClearBtn = document.getElementById('heroAvatarClearBtn');
   const stackTitleInput = document.getElementById('stackTitleInput');
   const stackSubtitleInput = document.getElementById('stackSubtitleInput');
   const stackItemsInput = document.getElementById('stackItemsInput');
   const stackQuickPicks = document.getElementById('stackQuickPicks');
   const stackIconStatus = document.getElementById('stackIconStatus');
+  const projNameInput = document.getElementById('projNameInput');
+  const projCatInput = document.getElementById('projCatInput');
+  const projDescInput = document.getElementById('projDescInput');
+  const projUrlInput = document.getElementById('projUrlInput');
+  const projWidthPills = document.getElementById('projWidthPills');
+  const projImageInput = document.getElementById('projImageInput');
+  const projImageFile = document.getElementById('projImageFile');
+  const projImageUploadBtn = document.getElementById('projImageUploadBtn');
+  const projImageClearBtn = document.getElementById('projImageClearBtn');
+  const downloadWorkHeaderBtn = document.getElementById('downloadWorkHeaderBtn');
+  const contactTitleInput = document.getElementById('contactTitleInput');
+  const contactSubtitleInput = document.getElementById('contactSubtitleInput');
+  const contactModePills = document.getElementById('contactModePills');
+  const contactItemsInput = document.getElementById('contactItemsInput');
+  const contactQuickPicks = document.getElementById('contactQuickPicks');
+  const contactIconStatus = document.getElementById('contactIconStatus');
+  const quoteTextInput = document.getElementById('quoteTextInput');
+  const quoteAuthorInput = document.getElementById('quoteAuthorInput');
+  const quoteLabelInput = document.getElementById('quoteLabelInput');
+  const shuffleQuoteBtn = document.getElementById('shuffleQuoteBtn');
   const studioPreviewTag = document.getElementById('studioPreviewTag');
   const studioSvgPreview = document.getElementById('studioSvgPreview');
   const snippetPanelTitle = document.getElementById('snippetPanelTitle');
@@ -459,7 +489,10 @@
   const kitChecklistRow = document.getElementById('kitChecklistRow');
   const includeHeroCheck = document.getElementById('includeHeroCheck');
   const includeHeatmapCheck = document.getElementById('includeHeatmapCheck');
+  const includeProjectCheck = document.getElementById('includeProjectCheck');
   const includeStackCheck = document.getElementById('includeStackCheck');
+  const includeQuoteCheck = document.getElementById('includeQuoteCheck');
+  const includeContactCheck = document.getElementById('includeContactCheck');
   const downloadKitBtn = document.getElementById('downloadKitBtn');
   const requiredFilesHint = document.getElementById('requiredFilesHint');
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
@@ -478,14 +511,65 @@
   const SIMPLE_ICONS_CDN = 'https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/';
   const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+  const STUDIO_CARDS = [
+    { id: 'heatmap', label: 'Heatmap', desc: 'Animated 52-week contribution graph' },
+    { id: 'hero', label: 'Hero Banner', desc: 'Editorial intro with avatar & headline' },
+    { id: 'stack', label: 'Tech Stack', desc: 'Dynamic Simple Icons tool pills' },
+    { id: 'project', label: 'Project', desc: 'Selected work showcase card (100% / 49%)' },
+    { id: 'contact', label: 'Contact', desc: 'Social media links with Simple Icons' },
+    { id: 'quote', label: 'Dev Quote', desc: 'M3 styled random or custom dev quote' }
+  ];
+
+  const DEV_QUOTES = [
+    { text: 'Within a computer, natural language is unnatural.', author: 'Alan Perlis' },
+    { text: 'Talk is cheap. Show me the code.', author: 'Linus Torvalds' },
+    { text: 'Simplicity is prerequisite for reliability.', author: 'Edsger W. Dijkstra' },
+    { text: 'Programs must be written for people to read, and only incidentally for machines to execute.', author: 'Harold Abelson' },
+    { text: 'Make it work, make it right, make it fast.', author: 'Kent Beck' },
+    { text: 'Premature optimization is the root of all evil.', author: 'Donald Knuth' },
+    { text: 'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.', author: 'Martin Fowler' },
+    { text: 'First, solve the problem. Then, write the code.', author: 'John Johnson' },
+    { text: 'Code is like humor. When you have to explain it, it is bad.', author: 'Cory House' },
+    { text: 'Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away.', author: 'Antoine de Saint-Exupery' },
+    { text: 'Controlling complexity is the essence of computer programming.', author: 'Brian Kernighan' },
+    { text: 'The best error message is the one that never shows up.', author: 'Thomas Fuchs' }
+  ];
+
+  const FALLBACK_SOCIAL_ICONS = {
+    luma: 'M12 2.2l2.6 6.2 6.2 2.6-6.2 2.6L12 19.8l-2.6-6.2-6.2-2.6 6.2-2.6L12 2.2z',
+    email: 'M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11zm2.2-.5L12 11.2 18.8 6H5.2zm13.8 2.1l-6.4 4.9a1 1 0 0 1-1.2 0L5 8.1v9.4c0 .3.2.5.5.5h13c.3 0 .5-.2.5-.5V8.1z',
+    website: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 9h-3.1a15.7 15.7 0 0 0-1.4-5.1A8 8 0 0 1 18.9 11zM12 4.1c1 1.4 1.8 3.9 2 6.9h-4c.2-3 1-5.5 2-6.9zM4.2 14a8.2 8.2 0 0 1 0-4h3.3a17 17 0 0 0 0 4H4.2zm.9 2h3.1a15.7 15.7 0 0 0 1.4 5.1A8 8 0 0 1 5.1 16zm3.1-8H5.1a8 8 0 0 1 4.5-5.1A15.7 15.7 0 0 0 8.2 8zm3.8 11.9c-1-1.4-1.8-3.9-2-6.9h4c-.2 3-1 5.5-2 6.9zm2.4-.8A15.7 15.7 0 0 0 15.8 14h3.1a8 8 0 0 1-4.5 5.1zM16.5 14a17 17 0 0 0 0-4h3.3a8.2 8.2 0 0 1 0 4h-3.3z'
+  };
+
+  const QUICK_PICK_SOCIALS = [
+    { name: 'GitHub', url: 'https://github.com/username' },
+    { name: 'LinkedIn', url: 'https://linkedin.com/in/username' },
+    { name: 'X', url: 'https://x.com/username' },
+    { name: 'Instagram', url: 'https://instagram.com/username' },
+    { name: 'WhatsApp', url: 'https://wa.me/628123456789' },
+    { name: 'Luma', url: 'https://lu.ma/username' },
+    { name: 'Discord', url: 'https://discord.com/users/username' },
+    { name: 'YouTube', url: 'https://youtube.com/@username' },
+    { name: 'Telegram', url: 'https://t.me/username' },
+    { name: 'Gmail', url: 'mailto:you@example.com' },
+    { name: 'Bluesky', url: 'https://bsky.app/profile/username' },
+    { name: 'Threads', url: 'https://threads.net/@username' }
+  ];
+
   let currentStudioTab = 'heatmap';
   let currentStudioTheme = 'dark';
   let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
   let currentWorkflowScope = 'public';
   let currentEmbedScope = 'kit';
+  let currentProjWidth = 'full';
+  let currentContactMode = 'card';
+  let heroAvatarDataUrl = '';
+  let projImageDataUrl = '';
   let fetchedState = null;
   let iconFetchTimer = null;
+  let contactFetchTimer = null;
+  let quoteIdx = 0;
   const remoteIconCache = new Map();
 
   function escapeXml(str) {
@@ -503,6 +587,7 @@
       isDark,
       bg: isDark ? '#1a181c' : '#ffffff',
       surfaceAlt: isDark ? '#211e23' : '#f5eff7',
+      surfaceHigh: isDark ? '#2b272d' : '#efe9f1',
       border: isDark ? 'rgba(206, 196, 207, 0.12)' : 'rgba(78, 68, 82, 0.14)',
       borderSubtle: isDark ? 'rgba(206, 196, 207, 0.08)' : 'rgba(78, 68, 82, 0.10)',
       text: isDark ? '#ebe4eb' : '#1d1a20',
@@ -511,6 +596,7 @@
       accent: isDark ? '#d9b9ff' : '#6e4d8e',
       accentContainer: isDark ? '#533571' : '#efddff',
       onAccentContainer: isDark ? '#efddff' : '#270747',
+      secondary: isDark ? '#e9c661' : '#8a3c27',
       emptyBorder: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)',
       pink: isDark ? '#fca5b9' : '#ec4899',
       lilac: isDark ? '#d9b9ff' : '#8b5cf6',
@@ -800,19 +886,79 @@ ${auroraBg}
     }
   }
 
-  function buildHeroBannerSvg(name, status, headline1, headline2, theme) {
+  function getIconPath(name) {
+    const slug = toSimpleIconSlug(name);
+    if (!slug) return null;
+    if (remoteIconCache.has(slug) && remoteIconCache.get(slug)) {
+      return remoteIconCache.get(slug);
+    }
+    if (FALLBACK_SOCIAL_ICONS[slug]) return FALLBACK_SOCIAL_ICONS[slug];
+    return null;
+  }
+
+  function slugifyName(str) {
+    return String(str || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item';
+  }
+
+  function parseContactLines(text) {
+    const lines = String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const out = [];
+    lines.forEach(line => {
+      const parts = line.split('|');
+      const name = (parts[0] || '').trim();
+      const url = (parts[1] || '').trim() || FIXED_SITE_URL;
+      if (name) out.push({ name, url, slug: slugifyName(name) });
+    });
+    return out.length ? out : [{ name: 'GitHub', url: 'https://github.com/arhylsion', slug: 'github' }];
+  }
+
+  async function syncDynamicContactIcons(text) {
+    const items = parseContactLines(text);
+    const slugs = [...new Set(items.map(i => toSimpleIconSlug(i.name)).filter(Boolean))];
+    const missing = slugs.filter(slug => !remoteIconCache.has(slug) && !FALLBACK_SOCIAL_ICONS[slug]);
+
+    if (missing.length > 0) {
+      if (contactIconStatus) contactIconStatus.textContent = `Fetching ${missing.length} icon(s)...`;
+      await Promise.all(missing.map(fetchIconPathBySlug));
+    }
+
+    const resolved = items.filter(i => Boolean(getIconPath(i.name))).length;
+    if (contactIconStatus) {
+      contactIconStatus.textContent = `${resolved}/${items.length} official icons loaded`;
+    }
+
+    if (currentStudioTab === 'contact') {
+      updateStudioPreview();
+    }
+  }
+
+  function buildHeroBannerSvg(name, status, headline1, headline2, avatarHref, theme) {
     const p = getThemePalette(theme);
     const cleanName = escapeXml((name || '').trim() || 'Developer');
     const initial = escapeXml(((name || '').trim()[0] || 'G').toUpperCase());
     const cleanStatus = escapeXml((status || '').trim() || 'Building open-source tools');
     const cleanH1 = escapeXml((headline1 || '').trim() || 'I build fast tools that do the work,');
     const cleanH2 = escapeXml((headline2 || '').trim() || 'and the interfaces they live in.');
+    const cleanAvatar = (avatarHref || '').trim();
     const h = 236;
+
+    const avatarDefs = cleanAvatar
+      ? '    <clipPath id="gh-avatar-clip"><rect x="32" y="28" width="44" height="44" rx="12"/></clipPath>\n'
+      : '';
+
+    const avatarBlock = cleanAvatar
+      ? `  <rect x="32" y="28" width="44" height="44" rx="12" fill="${p.accentContainer}"/>
+  <image href="${escapeXml(cleanAvatar)}" x="32" y="28" width="44" height="44" clip-path="url(#gh-avatar-clip)" preserveAspectRatio="xMidYMid slice"/>
+  <rect x="32" y="28" width="44" height="44" rx="12" fill="none" stroke="${p.border}" stroke-width="1"/>`
+      : `  <g transform="translate(32, 28)">
+    <rect width="44" height="44" rx="12" fill="${p.accentContainer}" stroke="${p.border}" stroke-width="1"/>
+    <text x="22" y="29" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="${p.onAccentContainer}">${initial}</text>
+  </g>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
   <defs>
     <clipPath id="gh-hero-clip"><rect width="820" height="${h}" rx="16"/></clipPath>
-    <filter id="gh-hero-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="52"/></filter>
+${avatarDefs}    <filter id="gh-hero-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="52"/></filter>
   </defs>
   <style>
     .gh-badge-link { cursor: pointer; text-decoration: none; }
@@ -829,10 +975,7 @@ ${auroraBg}
     <ellipse class="gh-orb-a" cx="700" cy="40" rx="180" ry="70" fill="${p.lilac}" opacity="${p.isDark ? '0.13' : '0.18'}"/>
     <ellipse class="gh-orb-b" cx="120" cy="220" rx="160" ry="58" fill="${p.pink}" opacity="${p.isDark ? '0.11' : '0.14'}"/>
   </g>
-  <g transform="translate(32, 28)">
-    <rect width="44" height="44" rx="12" fill="${p.accentContainer}" stroke="${p.border}" stroke-width="1"/>
-    <text x="22" y="29" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="${p.onAccentContainer}">${initial}</text>
-  </g>
+${avatarBlock}
   <text x="90" y="47" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="${p.text}">${cleanName}</text>
   <circle cx="95" cy="64" r="4" fill="${p.mint}"/>
   <text x="107" y="68" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="400" fill="${p.textDim}">${cleanStatus}</text>
@@ -844,6 +987,219 @@ ${auroraBg}
   </a>
   <text class="gh-fade-up" x="32" y="144" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="38" font-weight="700" letter-spacing="-0.03em" fill="${p.text}" style="animation-delay:0.06s;">${cleanH1}</text>
   <text class="gh-fade-up" x="32" y="192" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="38" font-weight="700" letter-spacing="-0.03em" fill="${p.textDim}" style="animation-delay:0.15s;">${cleanH2}</text>
+</svg>`;
+  }
+
+  function buildSectionHeaderSvg(boldText, mutedText, theme) {
+    const p = getThemePalette(theme);
+    const cleanBold = escapeXml((boldText || '').trim() || 'Selected work.');
+    const cleanMuted = escapeXml((mutedText || '').trim() || 'Products, client sites and open source.');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 52" width="820" height="52" fill="none">
+  <text x="4" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" letter-spacing="-0.025em">
+    <tspan font-weight="700" fill="${p.text}">${cleanBold}</tspan>
+    <tspan dx="6" font-weight="400" fill="${p.textDim}">${cleanMuted}</tspan>
+  </text>
+</svg>`;
+  }
+
+  function buildProjectCardSvg(name, category, desc, imgHref, widthMode, theme) {
+    const p = getThemePalette(theme);
+    const isHalf = widthMode === 'half';
+    const w = isHalf ? 400 : 820;
+    const previewH = isHalf ? 186 : 286;
+    const footerH = 82;
+    const h = previewH + footerH + 16;
+    const pad = 12;
+    const innerW = w - pad * 2;
+    const cleanName = escapeXml((name || '').trim() || 'Project');
+    const initial = escapeXml(((name || '').trim()[0] || 'P').toUpperCase());
+    const cleanCat = escapeXml((category || '').trim() || 'Web App');
+    const maxDescChars = isHalf ? 44 : 92;
+    const rawDesc = (desc || '').trim() || 'Built with clean architecture and thoughtful design.';
+    const trimmedDesc = rawDesc.length > maxDescChars ? rawDesc.slice(0, maxDescChars - 1).trim() + '\u2026' : rawDesc;
+    const cleanDesc = escapeXml(trimmedDesc);
+    const cleanImg = (imgHref || '').trim();
+    const footerY = pad + previewH + 18;
+    const arrowX = w - 52;
+
+    const coverContent = cleanImg
+      ? `  <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="${p.surfaceAlt}"/>
+  <image href="${escapeXml(cleanImg)}" x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" clip-path="url(#gh-proj-clip)" preserveAspectRatio="xMidYMid slice"/>
+  <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="none" stroke="${p.borderSubtle}" stroke-width="1"/>`
+      : `  <rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12" fill="${p.surfaceAlt}" stroke="${p.borderSubtle}" stroke-width="1"/>
+  <g clip-path="url(#gh-proj-clip)" filter="url(#gh-proj-blur)">
+    <ellipse cx="${Math.round(w * 0.25)}" cy="${Math.round(previewH * 0.35)}" rx="${Math.round(w * 0.28)}" ry="70" fill="${p.lilac}" opacity="${p.isDark ? '0.20' : '0.25'}"/>
+    <ellipse cx="${Math.round(w * 0.78)}" cy="${Math.round(previewH * 0.75)}" rx="${Math.round(w * 0.24)}" ry="65" fill="${p.pink}" opacity="${p.isDark ? '0.18' : '0.22'}"/>
+  </g>
+  <rect x="${pad + 22}" y="${pad + 20}" width="${innerW - 44}" height="${previewH - 20}" rx="10" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <circle cx="${pad + 38}" cy="${pad + 36}" r="4" fill="${p.pink}"/>
+  <circle cx="${pad + 52}" cy="${pad + 36}" r="4" fill="${p.secondary}"/>
+  <circle cx="${pad + 66}" cy="${pad + 36}" r="4" fill="${p.mint}"/>
+  <text x="${Math.round(w / 2)}" y="${Math.round(pad + previewH * 0.56)}" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="${isHalf ? 22 : 30}" font-weight="700" letter-spacing="-0.03em" fill="${p.text}">${cleanName}</text>
+  <text x="${Math.round(w / 2)}" y="${Math.round(pad + previewH * 0.56 + 24)}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="${p.textDim}">${cleanCat}</text>`;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" fill="none">
+  <defs>
+    <clipPath id="gh-proj-clip"><rect x="${pad}" y="${pad}" width="${innerW}" height="${previewH}" rx="12"/></clipPath>
+    <filter id="gh-proj-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="44"/></filter>
+  </defs>
+  <rect width="${w}" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+${coverContent}
+  <g transform="translate(18, ${footerY})">
+    <rect width="38" height="38" rx="10" fill="${p.surfaceHigh}" stroke="${p.border}" stroke-width="1"/>
+    <text x="19" y="25" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" font-weight="700" fill="${p.accent}">${initial}</text>
+    <text x="50" y="16" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5">
+      <tspan font-weight="600" fill="${p.text}">${cleanName}</tspan>
+      <tspan dx="5" font-weight="400" fill="${p.textDim}">\u00b7 ${cleanCat}</tspan>
+    </text>
+    <text x="50" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" font-weight="400" fill="${p.textDim}">${cleanDesc}</text>
+  </g>
+  <g transform="translate(${arrowX}, ${footerY + 2})">
+    <circle cx="17" cy="17" r="17" fill="${p.surfaceAlt}" stroke="${p.border}" stroke-width="1"/>
+    <path d="M13 21L21 13M21 13H15M21 13V19" stroke="${p.textMuted}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`;
+  }
+
+  function buildSocialPillSvg(item, theme) {
+    const p = getThemePalette(theme);
+    const label = escapeXml(item.name);
+    const pathD = getIconPath(item.name);
+    const hasIcon = Boolean(pathD);
+    const textWidth = Math.round(item.name.length * 7.8);
+    const pillW = hasIcon ? Math.max(88, textWidth + 56) : Math.max(68, textWidth + 34);
+    const pillH = 40;
+    const iconGroup = hasIcon
+      ? `<g transform="translate(15, 12) scale(0.667)"><path d="${pathD}" fill="${p.text}"/></g>`
+      : '';
+    const textX = hasIcon ? 38 : 17;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${pillW} ${pillH}" width="${pillW}" height="${pillH}" fill="none">
+  <rect x="0.5" y="0.5" width="${pillW - 1}" height="${pillH - 1}" rx="20" fill="${p.surfaceAlt}" stroke="${p.border}" stroke-width="1"/>
+  ${iconGroup}
+  <text x="${textX}" y="24.5" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="${p.text}">${label}</text>
+</svg>`;
+  }
+
+  function buildContactCardSvg(title, subtitle, rawLines, theme) {
+    const p = getThemePalette(theme);
+    const cleanTitle = escapeXml((title || '').trim() || 'Say hi.');
+    const cleanSub = escapeXml((subtitle || '').trim() || "Tell me what's slowing you down.");
+    const items = parseContactLines(rawLines);
+
+    const padX = 32;
+    const maxW = 820 - padX;
+    const pillH = 38;
+    const gapX = 10;
+    const gapY = 12;
+    let curX = padX;
+    let curY = 76;
+    let pillsSvg = '';
+
+    items.forEach((item, idx) => {
+      const label = escapeXml(item.name);
+      const pathD = getIconPath(item.name);
+      const hasIcon = Boolean(pathD);
+      const textWidth = Math.round(item.name.length * 7.8);
+      const pillW = hasIcon ? Math.max(88, textWidth + 54) : Math.max(68, textWidth + 32);
+
+      if (curX + pillW > maxW && curX > padX) {
+        curX = padX;
+        curY += pillH + gapY;
+      }
+
+      const delay = (0.04 * idx).toFixed(3);
+      const iconGroup = hasIcon
+        ? `<g transform="translate(14, 11) scale(0.667)"><path d="${pathD}" fill="${p.text}"/></g>`
+        : '';
+      const textX = hasIcon ? 37 : 16;
+
+      pillsSvg += `<a href="${escapeXml(item.url)}" target="_blank" rel="noopener noreferrer" class="gh-social-link">
+    <g class="gh-pill-in" transform="translate(${curX}, ${curY})" style="animation-delay:${delay}s;">
+      <rect width="${pillW}" height="${pillH}" rx="19" fill="${p.surfaceAlt}" stroke="${p.border}" stroke-width="1"/>
+      ${iconGroup}
+      <text x="${textX}" y="23.5" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="500" fill="${p.text}">${label}</text>
+    </g>
+  </a>`;
+      curX += pillW + gapX;
+    });
+
+    const h = curY + pillH + 30;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+  <style>
+    .gh-badge-link, .gh-social-link { cursor: pointer; text-decoration: none; }
+    .gh-badge-link:hover rect, .gh-social-link:hover rect { opacity: 0.85; }
+    .gh-pill-in { opacity: 0; animation: ghPillFade 0.38s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    @keyframes ghPillFade { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+  <rect width="820" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <text x="32" y="46" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" letter-spacing="-0.02em">
+    <tspan font-weight="700" fill="${p.text}">${cleanTitle}</tspan>
+    <tspan dx="6" font-weight="400" fill="${p.textDim}">${cleanSub}</tspan>
+  </text>
+  <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(712, 26)">
+      <rect width="76" height="24" rx="12" fill="${p.accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${p.onAccentContainer}">ghgraph</text>
+    </g>
+  </a>
+  ${pillsSvg}
+</svg>`;
+  }
+
+  function wrapQuoteLines(text, maxChars) {
+    const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return ['Simplicity is prerequisite for reliability.'];
+    const lines = [];
+    let current = '';
+    words.forEach(w => {
+      if ((current + ' ' + w).trim().length > maxChars && current) {
+        lines.push(current);
+        current = w;
+      } else {
+        current = (current + ' ' + w).trim();
+      }
+    });
+    if (current) lines.push(current);
+    return lines.slice(0, 3);
+  }
+
+  function buildDevQuoteSvg(quoteText, author, label, theme) {
+    const p = getThemePalette(theme);
+    const lines = wrapQuoteLines(quoteText || 'Within a computer, natural language is unnatural.', 58);
+    const cleanAuthor = escapeXml((author || '').trim() || 'Alan Perlis');
+    const cleanLabel = escapeXml((label || '').trim() || 'Random Dev Quote');
+    const lineHeight = 32;
+    const startY = 82;
+    const authorY = startY + (lines.length - 1) * lineHeight + 42;
+    const h = authorY + 32;
+
+    const linesSvg = lines.map((line, i) => {
+      const y = startY + i * lineHeight;
+      const esc = escapeXml(line);
+      const openQ = i === 0 ? `<tspan font-style="normal" font-weight="700" fill="${p.secondary}">\u201c</tspan>` : '';
+      const closeQ = i === lines.length - 1 ? `<tspan font-style="normal" font-weight="700" fill="${p.secondary}">\u201d</tspan>` : '';
+      return `  <text class="gh-q-in" x="34" y="${y}" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="500" font-style="italic" letter-spacing="-0.015em" fill="${p.mint}" style="animation-delay:${(0.08 + i * 0.08).toFixed(2)}s;">${openQ}${esc}${closeQ}</text>`;
+    }).join('\n');
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+  <style>
+    .gh-badge-link { cursor: pointer; text-decoration: none; }
+    .gh-badge-link:hover rect { opacity: 0.85; }
+    .gh-q-in { opacity: 0; animation: ghQuoteIn 0.5s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    @keyframes ghQuoteIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+  <rect width="820" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <text x="34" y="36" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="500" fill="${p.textDim}">${cleanLabel}</text>
+  <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(712, 20)">
+      <rect width="76" height="24" rx="12" fill="${p.accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${p.onAccentContainer}">ghgraph</text>
+    </g>
+  </a>
+${linesSvg}
+  <text class="gh-q-in" x="786" y="${authorY}" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="500" font-style="italic" fill="${p.pink}" style="animation-delay:0.26s;">\u2014 ${cleanAuthor}</text>
 </svg>`;
   }
 
@@ -942,15 +1298,44 @@ ${auroraBg}
     });
   }
 
+  function renderContactQuickPicks() {
+    if (!contactQuickPicks || !contactItemsInput) return;
+    const existing = new Set(parseContactLines(contactItemsInput.value).map(i => i.name.toLowerCase()));
+    contactQuickPicks.innerHTML = '';
+    QUICK_PICK_SOCIALS.forEach(s => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'stack-pick-chip' + (existing.has(s.name.toLowerCase()) ? ' active' : '');
+      btn.textContent = s.name;
+      btn.addEventListener('click', () => {
+        const lines = contactItemsInput.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const idx = lines.findIndex(l => (l.split('|')[0] || '').trim().toLowerCase() === s.name.toLowerCase());
+        if (idx >= 0) {
+          lines.splice(idx, 1);
+        } else {
+          const u = ((studioUsername ? studioUsername.value : '') || 'username').trim() || 'username';
+          lines.push(`${s.name} | ${s.url.replace(/username/g, u)}`);
+        }
+        contactItemsInput.value = lines.join('\n');
+        renderContactQuickPicks();
+        syncDynamicContactIcons(contactItemsInput.value);
+        updateStudioPreview();
+      });
+      contactQuickPicks.appendChild(btn);
+    });
+  }
+
   function getCardSvgByType(type, themeOverride) {
     const theme = themeOverride || currentStudioTheme;
     const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
     if (type === 'hero') {
+      const avatarHref = heroAvatarDataUrl || (heroAvatarInput ? heroAvatarInput.value : '');
       return buildHeroBannerSvg(
         heroNameInput ? heroNameInput.value : 'Arhylsion',
         heroStatusInput ? heroStatusInput.value : '',
         heroHeadline1Input ? heroHeadline1Input.value : '',
         heroHeadline2Input ? heroHeadline2Input.value : '',
+        avatarHref,
         theme
       );
     }
@@ -959,6 +1344,33 @@ ${auroraBg}
         stackTitleInput ? stackTitleInput.value : 'Tools.',
         stackSubtitleInput ? stackSubtitleInput.value : '',
         stackItemsInput ? stackItemsInput.value : '',
+        theme
+      );
+    }
+    if (type === 'project') {
+      const imgHref = projImageDataUrl || (projImageInput ? projImageInput.value : '');
+      return buildProjectCardSvg(
+        projNameInput ? projNameInput.value : 'ghgraph',
+        projCatInput ? projCatInput.value : '',
+        projDescInput ? projDescInput.value : '',
+        imgHref,
+        currentProjWidth,
+        theme
+      );
+    }
+    if (type === 'contact') {
+      return buildContactCardSvg(
+        contactTitleInput ? contactTitleInput.value : 'Say hi.',
+        contactSubtitleInput ? contactSubtitleInput.value : '',
+        contactItemsInput ? contactItemsInput.value : '',
+        theme
+      );
+    }
+    if (type === 'quote') {
+      return buildDevQuoteSvg(
+        quoteTextInput ? quoteTextInput.value : '',
+        quoteAuthorInput ? quoteAuthorInput.value : '',
+        quoteLabelInput ? quoteLabelInput.value : 'Random Dev Quote',
         theme
       );
     }
@@ -973,6 +1385,9 @@ ${auroraBg}
   function getAssetPrefixByType(type) {
     if (type === 'hero') return 'ghgraph-hero';
     if (type === 'stack') return 'ghgraph-stack';
+    if (type === 'project') return `ghgraph-project-${slugifyName(projNameInput ? projNameInput.value : 'project')}`;
+    if (type === 'contact') return 'ghgraph-contact';
+    if (type === 'quote') return 'ghgraph-quote';
     return 'ghgraph';
   }
 
@@ -982,32 +1397,69 @@ ${auroraBg}
 
   function getSelectedKitTypes() {
     const types = [];
-    if (!includeHeroCheck || includeHeroCheck.checked) types.push('hero');
-    if (!includeHeatmapCheck || includeHeatmapCheck.checked) types.push('heatmap');
-    if (!includeStackCheck || includeStackCheck.checked) types.push('stack');
+    if (includeHeroCheck && includeHeroCheck.checked) types.push('hero');
+    if (includeHeatmapCheck && includeHeatmapCheck.checked) types.push('heatmap');
+    if (includeProjectCheck && includeProjectCheck.checked) types.push('project');
+    if (includeStackCheck && includeStackCheck.checked) types.push('stack');
+    if (includeQuoteCheck && includeQuoteCheck.checked) types.push('quote');
+    if (includeContactCheck && includeContactCheck.checked) types.push('contact');
     return types.length ? types : [currentStudioTab];
   }
 
-  function buildPictureSnippet(user, prefix, altText) {
-    return `<a href="${FIXED_SITE_URL}">
+  function buildPictureSnippet(user, prefix, altText, hrefUrl, widthAttr) {
+    const targetUrl = (hrefUrl || '').trim() || FIXED_SITE_URL;
+    const widthVal = widthAttr || '100%';
+    return `<a href="${targetUrl}">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/${prefix}-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="assets/${prefix}-light.svg">
-    <img alt="${altText}" src="assets/${prefix}-dark.svg" width="100%">
+    <img alt="${altText}" src="assets/${prefix}-dark.svg" width="${widthVal}">
   </picture>
 </a>`;
+  }
+
+  function buildContactPillsMarkdown() {
+    const title = (contactTitleInput ? contactTitleInput.value : 'Say hi.').trim() || 'Say hi.';
+    const sub = (contactSubtitleInput ? contactSubtitleInput.value : '').trim();
+    const headerBlock = `<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/ghgraph-contact-header-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/ghgraph-contact-header-light.svg">
+  <img src="assets/ghgraph-contact-header-dark.svg" alt="${title} ${sub}" width="100%">
+</picture>`;
+    const items = parseContactLines(contactItemsInput ? contactItemsInput.value : '');
+    const pillLines = items.map(item =>
+      `<a href="${item.url}"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/s-${item.slug}-dark.svg"><img src="assets/s-${item.slug}-light.svg" alt="${item.name}" height="40"></picture></a>`
+    ).join('\n');
+    return `${headerBlock}\n\n${pillLines}`;
   }
 
   function buildKitMarkdown(user, types) {
     const u = (user || '').trim() || 'username';
     const blocks = types.map(type => {
       const prefix = getAssetPrefixByType(type);
-      const alt = type === 'hero'
-        ? `${u} — Profile Hero`
-        : type === 'stack'
-          ? `${u}'s Tech Stack`
-          : `${u}'s Contribution Heatmap`;
-      return buildPictureSnippet(u, prefix, alt);
+      if (type === 'hero') {
+        return buildPictureSnippet(u, prefix, `${u} \u2014 Profile Hero`, FIXED_SITE_URL, '100%');
+      }
+      if (type === 'stack') {
+        return buildPictureSnippet(u, prefix, `${u}'s Tech Stack`, FIXED_SITE_URL, '100%');
+      }
+      if (type === 'project') {
+        const pName = (projNameInput ? projNameInput.value : 'Project').trim() || 'Project';
+        const pDesc = (projDescInput ? projDescInput.value : '').trim();
+        const pUrl = (projUrlInput ? projUrlInput.value : FIXED_SITE_URL).trim() || FIXED_SITE_URL;
+        const wAttr = currentProjWidth === 'half' ? '49%' : '100%';
+        return buildPictureSnippet(u, prefix, `${pName}: ${pDesc}`, pUrl, wAttr);
+      }
+      if (type === 'contact') {
+        if (currentContactMode === 'pills') {
+          return buildContactPillsMarkdown();
+        }
+        return buildPictureSnippet(u, prefix, `Contact ${u}`, FIXED_SITE_URL, '100%');
+      }
+      if (type === 'quote') {
+        return buildPictureSnippet(u, prefix, 'Random Dev Quote', FIXED_SITE_URL, '100%');
+      }
+      return buildPictureSnippet(u, prefix, `${u}'s Contribution Heatmap`, FIXED_SITE_URL, '100%');
     });
     return blocks.join('\n\n<br>\n\n');
   }
@@ -1020,13 +1472,15 @@ ${auroraBg}
     studioSvgPreview.innerHTML = svgCode;
 
     if (studioPreviewTag) {
-      if (currentStudioTab === 'hero') {
-        studioPreviewTag.textContent = 'Hero Banner Preview (Static)';
-      } else if (currentStudioTab === 'stack') {
-        studioPreviewTag.textContent = 'Tech Stack Preview (Dynamic Simple Icons)';
-      } else {
-        studioPreviewTag.textContent = 'Animated Heatmap Preview';
-      }
+      const tagMap = {
+        heatmap: 'Animated Heatmap Preview',
+        hero: 'Hero Banner Preview (Static)',
+        stack: 'Tech Stack Preview (Dynamic Simple Icons)',
+        project: currentProjWidth === 'half' ? 'Project Card Preview (49% Half Grid)' : 'Project Card Preview (100% Featured)',
+        contact: currentContactMode === 'pills' ? 'Contact Preview (Clickable Social Pills)' : 'Contact Card Preview (Unified SVG)',
+        quote: 'Dev Quote Preview (M3 Expressive)'
+      };
+      studioPreviewTag.textContent = tagMap[currentStudioTab] || 'Card Preview';
     }
 
     const embedTypes = currentEmbedScope === 'kit' ? getSelectedKitTypes() : [currentStudioTab];
@@ -1040,11 +1494,17 @@ ${auroraBg}
     }
 
     if (requiredFilesHint) {
-      const files = embedTypes.map(t => {
-        const pfx = getAssetPrefixByType(t);
-        return `<code>assets/${pfx}-{dark,light}.svg</code>`;
+      const files = [];
+      embedTypes.forEach(t => {
+        if (t === 'contact' && currentContactMode === 'pills') {
+          files.push('<code>assets/ghgraph-contact-header-{dark,light}.svg</code>');
+          files.push('<code>assets/s-&lt;platform&gt;-{dark,light}.svg</code>');
+        } else {
+          const pfx = getAssetPrefixByType(t);
+          files.push(`<code>assets/${pfx}-{dark,light}.svg</code>`);
+        }
       });
-      requiredFilesHint.innerHTML = `Required files in your repository: ${files.join(' · ')}`;
+      requiredFilesHint.innerHTML = `Required files in your repository: ${files.join(' \u00b7 ')}`;
     }
 
     if (workflowPanel && staticNotePanel) {
@@ -1201,22 +1661,111 @@ jobs:
   }
 
   function triggerSvgDownload(theme) {
+    if (currentStudioTab === 'contact' && currentContactMode === 'pills') {
+      const title = contactTitleInput ? contactTitleInput.value : 'Say hi.';
+      const sub = contactSubtitleInput ? contactSubtitleInput.value : '';
+      const queue = [{ svg: buildSectionHeaderSvg(title, sub, theme), name: `ghgraph-contact-header-${theme}.svg` }];
+      parseContactLines(contactItemsInput ? contactItemsInput.value : '').forEach(item => {
+        queue.push({ svg: buildSocialPillSvg(item, theme), name: `s-${item.slug}-${theme}.svg` });
+      });
+      queue.forEach((entry, idx) => {
+        setTimeout(() => downloadSvgFile(entry.svg, entry.name), idx * 160);
+      });
+      return;
+    }
     downloadSvgFile(getActiveCardSvg(theme), `${getActiveAssetPrefix()}-${theme}.svg`);
   }
 
   async function triggerKitDownload() {
-    if (stackItemsInput) {
-      await syncDynamicTechIcons(stackItemsInput.value);
-    }
+    if (stackItemsInput) await syncDynamicTechIcons(stackItemsInput.value);
+    if (contactItemsInput) await syncDynamicContactIcons(contactItemsInput.value);
     const types = getSelectedKitTypes();
     const queue = [];
     types.forEach(type => {
-      const prefix = getAssetPrefixByType(type);
-      queue.push({ svg: getCardSvgByType(type, 'dark'), name: `${prefix}-dark.svg` });
-      queue.push({ svg: getCardSvgByType(type, 'light'), name: `${prefix}-light.svg` });
+      if (type === 'contact' && currentContactMode === 'pills') {
+        const title = contactTitleInput ? contactTitleInput.value : 'Say hi.';
+        const sub = contactSubtitleInput ? contactSubtitleInput.value : '';
+        queue.push({ svg: buildSectionHeaderSvg(title, sub, 'dark'), name: 'ghgraph-contact-header-dark.svg' });
+        queue.push({ svg: buildSectionHeaderSvg(title, sub, 'light'), name: 'ghgraph-contact-header-light.svg' });
+        parseContactLines(contactItemsInput ? contactItemsInput.value : '').forEach(item => {
+          queue.push({ svg: buildSocialPillSvg(item, 'dark'), name: `s-${item.slug}-dark.svg` });
+          queue.push({ svg: buildSocialPillSvg(item, 'light'), name: `s-${item.slug}-light.svg` });
+        });
+      } else {
+        const prefix = getAssetPrefixByType(type);
+        queue.push({ svg: getCardSvgByType(type, 'dark'), name: `${prefix}-dark.svg` });
+        queue.push({ svg: getCardSvgByType(type, 'light'), name: `${prefix}-light.svg` });
+      }
     });
     queue.forEach((item, idx) => {
-      setTimeout(() => downloadSvgFile(item.svg, item.name), idx * 180);
+      setTimeout(() => downloadSvgFile(item.svg, item.name), idx * 170);
+    });
+  }
+
+  function resizeImageFileToDataUrl(file, maxW, maxH, mime, quality, callback) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width, maxH / img.height);
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL(mime || 'image/jpeg', quality || 0.86));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function selectStudioCard(cardId) {
+    currentStudioTab = cardId;
+    const cardMeta = STUDIO_CARDS.find(c => c.id === cardId) || STUDIO_CARDS[0];
+    if (studioActiveCardPill) studioActiveCardPill.textContent = cardMeta.label;
+    if (studioCardSearch) studioCardSearch.value = '';
+    if (studioSearchMenu) studioSearchMenu.setAttribute('hidden', '');
+
+    if (tabHeatmapControls) tabHeatmapControls.toggleAttribute('hidden', cardId !== 'heatmap');
+    if (tabHeroControls) tabHeroControls.toggleAttribute('hidden', cardId !== 'hero');
+    if (tabStackControls) tabStackControls.toggleAttribute('hidden', cardId !== 'stack');
+    if (tabProjectControls) tabProjectControls.toggleAttribute('hidden', cardId !== 'project');
+    if (tabContactControls) tabContactControls.toggleAttribute('hidden', cardId !== 'contact');
+    if (tabQuoteControls) tabQuoteControls.toggleAttribute('hidden', cardId !== 'quote');
+
+    if (cardId === 'stack' && stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
+    if (cardId === 'contact' && contactItemsInput) syncDynamicContactIcons(contactItemsInput.value);
+    updateStudioPreview();
+  }
+
+  function renderStudioSearchMenu(query) {
+    if (!studioSearchMenu) return;
+    const q = (query || '').trim().toLowerCase();
+    const matches = STUDIO_CARDS.filter(c =>
+      !q || c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.id.includes(q)
+    );
+    studioSearchMenu.innerHTML = '';
+    if (!matches.length) {
+      const empty = document.createElement('div');
+      empty.className = 'studio-search-option';
+      empty.innerHTML = '<span class="search-opt-desc">No matching card found</span>';
+      studioSearchMenu.appendChild(empty);
+      return;
+    }
+    matches.forEach(card => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'studio-search-option' + (card.id === currentStudioTab ? ' active' : '');
+      btn.dataset.card = card.id;
+      btn.innerHTML = `<span class="search-opt-name">${card.label}</span><span class="search-opt-desc">${card.desc}</span>`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectStudioCard(card.id);
+      });
+      studioSearchMenu.appendChild(btn);
     });
   }
 
@@ -1225,6 +1774,7 @@ jobs:
       profileStudioModal.removeAttribute('hidden');
       updateStudioPreview();
       if (stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
+      if (contactItemsInput) syncDynamicContactIcons(contactItemsInput.value);
     }
   }
 
@@ -1289,25 +1839,30 @@ jobs:
       }
     });
 
-    if (studioCardTabs) {
-      const tabs = studioCardTabs.querySelectorAll('.studio-pill');
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          tabs.forEach(t => {
-            t.classList.remove('active');
-            t.setAttribute('aria-selected', 'false');
-          });
-          tab.classList.add('active');
-          tab.setAttribute('aria-selected', 'true');
-          currentStudioTab = tab.dataset.tab;
-          if (tabHeatmapControls) tabHeatmapControls.toggleAttribute('hidden', currentStudioTab !== 'heatmap');
-          if (tabHeroControls) tabHeroControls.toggleAttribute('hidden', currentStudioTab !== 'hero');
-          if (tabStackControls) tabStackControls.toggleAttribute('hidden', currentStudioTab !== 'stack');
-          if (currentStudioTab === 'stack' && stackItemsInput) {
-            syncDynamicTechIcons(stackItemsInput.value);
-          }
-          updateStudioPreview();
-        });
+    if (studioCardSearch && studioSearchMenu) {
+      studioCardSearch.addEventListener('focus', () => {
+        renderStudioSearchMenu(studioCardSearch.value);
+        studioSearchMenu.removeAttribute('hidden');
+      });
+      studioCardSearch.addEventListener('click', () => {
+        renderStudioSearchMenu(studioCardSearch.value);
+        studioSearchMenu.removeAttribute('hidden');
+      });
+      studioCardSearch.addEventListener('input', () => {
+        renderStudioSearchMenu(studioCardSearch.value);
+        studioSearchMenu.removeAttribute('hidden');
+      });
+      studioCardSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const first = studioSearchMenu.querySelector('.studio-search-option[data-card]');
+          if (first) selectStudioCard(first.dataset.card);
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (studioSearchWrap && !studioSearchWrap.contains(e.target)) {
+          studioSearchMenu.setAttribute('hidden', '');
+        }
       });
     }
 
@@ -1327,13 +1882,141 @@ jobs:
       });
     }
 
-    [includeHeroCheck, includeHeatmapCheck, includeStackCheck].forEach(chk => {
+    [includeHeroCheck, includeHeatmapCheck, includeProjectCheck, includeStackCheck, includeQuoteCheck, includeContactCheck].forEach(chk => {
       if (chk) chk.addEventListener('change', updateStudioPreview);
     });
 
     if (downloadKitBtn) {
       downloadKitBtn.addEventListener('click', triggerKitDownload);
     }
+
+    if (heroAvatarUploadBtn && heroAvatarFile) {
+      heroAvatarUploadBtn.addEventListener('click', () => heroAvatarFile.click());
+      heroAvatarFile.addEventListener('change', () => {
+        const f = heroAvatarFile.files && heroAvatarFile.files[0];
+        if (!f) return;
+        resizeImageFileToDataUrl(f, 128, 128, 'image/png', 0.92, (dataUrl) => {
+          heroAvatarDataUrl = dataUrl;
+          if (heroAvatarInput) heroAvatarInput.value = f.name;
+          if (heroAvatarClearBtn) heroAvatarClearBtn.removeAttribute('hidden');
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (heroAvatarClearBtn) {
+      heroAvatarClearBtn.addEventListener('click', () => {
+        heroAvatarDataUrl = '';
+        if (heroAvatarInput) heroAvatarInput.value = '';
+        if (heroAvatarFile) heroAvatarFile.value = '';
+        heroAvatarClearBtn.setAttribute('hidden', '');
+        updateStudioPreview();
+      });
+    }
+
+    if (heroAvatarInput) {
+      heroAvatarInput.addEventListener('input', () => {
+        heroAvatarDataUrl = '';
+        if (heroAvatarClearBtn) heroAvatarClearBtn.toggleAttribute('hidden', !heroAvatarInput.value.trim());
+        updateStudioPreview();
+      });
+    }
+
+    if (projImageUploadBtn && projImageFile) {
+      projImageUploadBtn.addEventListener('click', () => projImageFile.click());
+      projImageFile.addEventListener('change', () => {
+        const f = projImageFile.files && projImageFile.files[0];
+        if (!f) return;
+        resizeImageFileToDataUrl(f, 820, 420, 'image/jpeg', 0.85, (dataUrl) => {
+          projImageDataUrl = dataUrl;
+          if (projImageInput) projImageInput.value = f.name;
+          if (projImageClearBtn) projImageClearBtn.removeAttribute('hidden');
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (projImageClearBtn) {
+      projImageClearBtn.addEventListener('click', () => {
+        projImageDataUrl = '';
+        if (projImageInput) projImageInput.value = '';
+        if (projImageFile) projImageFile.value = '';
+        projImageClearBtn.setAttribute('hidden', '');
+        updateStudioPreview();
+      });
+    }
+
+    if (projImageInput) {
+      projImageInput.addEventListener('input', () => {
+        projImageDataUrl = '';
+        if (projImageClearBtn) projImageClearBtn.toggleAttribute('hidden', !projImageInput.value.trim());
+        updateStudioPreview();
+      });
+    }
+
+    if (downloadWorkHeaderBtn) {
+      downloadWorkHeaderBtn.addEventListener('click', () => {
+        downloadSvgFile(buildSectionHeaderSvg('Selected work.', 'Products, client sites and open source.', 'dark'), 'ghgraph-work-header-dark.svg');
+        setTimeout(() => {
+          downloadSvgFile(buildSectionHeaderSvg('Selected work.', 'Products, client sites and open source.', 'light'), 'ghgraph-work-header-light.svg');
+        }, 180);
+      });
+    }
+
+    if (projWidthPills) {
+      const pills = projWidthPills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentProjWidth = pill.dataset.width;
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (contactModePills) {
+      const pills = contactModePills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentContactMode = pill.dataset.cmode;
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (contactItemsInput) {
+      contactItemsInput.addEventListener('input', () => {
+        renderContactQuickPicks();
+        updateStudioPreview();
+        clearTimeout(contactFetchTimer);
+        contactFetchTimer = setTimeout(() => {
+          syncDynamicContactIcons(contactItemsInput.value);
+        }, 320);
+      });
+    }
+
+    if (shuffleQuoteBtn) {
+      shuffleQuoteBtn.addEventListener('click', () => {
+        quoteIdx = (quoteIdx + 1) % DEV_QUOTES.length;
+        const q = DEV_QUOTES[quoteIdx];
+        if (quoteTextInput) quoteTextInput.value = q.text;
+        if (quoteAuthorInput) quoteAuthorInput.value = q.author;
+        updateStudioPreview();
+      });
+    }
+
+    renderContactQuickPicks();
 
     if (fetchContribBtn) {
       fetchContribBtn.addEventListener('click', fetchUserContributions);
@@ -1360,7 +2043,13 @@ jobs:
       });
     }
 
-    [heroNameInput, heroStatusInput, heroHeadline1Input, heroHeadline2Input, stackTitleInput, stackSubtitleInput].forEach(el => {
+    [
+      heroNameInput, heroStatusInput, heroHeadline1Input, heroHeadline2Input,
+      stackTitleInput, stackSubtitleInput,
+      projNameInput, projCatInput, projDescInput, projUrlInput,
+      contactTitleInput, contactSubtitleInput,
+      quoteTextInput, quoteAuthorInput, quoteLabelInput
+    ].forEach(el => {
       if (el) el.addEventListener('input', updateStudioPreview);
     });
 

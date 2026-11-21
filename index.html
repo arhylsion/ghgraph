@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <div class="page-container">
@@ -503,13 +503,19 @@
         </button>
       </div>
 
-      <p class="studio-modal-lede">Build a cohesive M3 Expressive Profile Kit (Hero Banner, Contribution Heatmap &amp; Tech Stack) with automatic Dark &amp; Light pairs for your <code>username/username</code> repository.</p>
+      <p class="studio-modal-lede">Build a cohesive M3 Expressive Profile Kit (Heatmap, Hero Banner, Tech Stack, Project, Contact &amp; Dev Quote) with automatic Dark &amp; Light pairs for your <code>username/username</code> repository.</p>
 
       <div class="studio-top-bar">
-        <div id="studioCardTabs" class="studio-pills studio-card-tabs" role="tablist" aria-label="Profile Kit Cards">
-          <button class="studio-pill active" data-tab="heatmap" type="button" role="tab" aria-selected="true">Heatmap</button>
-          <button class="studio-pill" data-tab="hero" type="button" role="tab" aria-selected="false">Hero Banner</button>
-          <button class="studio-pill" data-tab="stack" type="button" role="tab" aria-selected="false">Tech Stack</button>
+        <div id="studioSearchWrap" class="studio-search-wrap">
+          <div class="studio-search-box">
+            <svg class="studio-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input id="studioCardSearch" type="text" class="studio-search-input" placeholder="Search cards (Heatmap, Hero, Stack, Project, Contact, Quote)..." autocomplete="off" spellcheck="false" aria-label="Search profile cards">
+            <span id="studioActiveCardPill" class="studio-active-pill">Heatmap</span>
+          </div>
+          <div id="studioSearchMenu" class="studio-search-menu" role="listbox" hidden></div>
         </div>
 
         <div id="studioThemePills" class="studio-pills" role="tablist" aria-label="M3 Theme">
@@ -594,6 +600,18 @@
             <input id="heroHeadline2Input" type="text" class="studio-text-input" value="and the interfaces they live in." placeholder="Second editorial line" spellcheck="false">
           </div>
         </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="heroAvatarInput" class="studio-label">Avatar Image (optional — path like <code>assets/avatar.png</code>, URL, or upload to inline)</label>
+          <div class="studio-fetch-row">
+            <div class="studio-input-box">
+              <input id="heroAvatarInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="assets/avatar.png (leave empty for monogram)" spellcheck="false">
+            </div>
+            <input id="heroAvatarFile" type="file" accept="image/*" hidden>
+            <button id="heroAvatarUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload local avatar image to embed directly inside SVG">Upload</button>
+            <button id="heroAvatarClearBtn" class="studio-action-btn studio-painted-btn" type="button" hidden title="Revert to monogram badge">Reset</button>
+          </div>
+        </div>
       </div>
 
       <div id="tabStackControls" class="studio-controls-bar studio-grid-2" hidden>
@@ -620,6 +638,121 @@
             <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="TypeScript, Python, React, Next.js, Node.js, Vite, Astro, Tailwind CSS, PostgreSQL, Supabase, Docker, Cursor, Claude, n8n, Git" placeholder="TypeScript, Python, Flutter, Rust, Kubernetes..." spellcheck="false">
           </div>
           <div id="stackQuickPicks" class="stack-quick-picks" aria-label="Quick toggle technologies"></div>
+        </div>
+      </div>
+
+      <div id="tabProjectControls" class="studio-controls-bar studio-grid-2" hidden>
+        <div class="studio-input-wrap">
+          <label for="projNameInput" class="studio-label">Project Name</label>
+          <div class="studio-input-box">
+            <input id="projNameInput" type="text" class="studio-text-input" value="ghgraph" placeholder="Project Name" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="projCatInput" class="studio-label">Category / Tag</label>
+          <div class="studio-input-box">
+            <input id="projCatInput" type="text" class="studio-text-input" value="CLI &amp; Profile README Studio" placeholder="Web app / macOS app / SaaS" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="projDescInput" class="studio-label">Short Description</label>
+          <div class="studio-input-box">
+            <input id="projDescInput" type="text" class="studio-text-input" value="Back-dated GitHub contribution graph painter and M3 Expressive profile kit generator." placeholder="One-sentence summary of the project" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="projUrlInput" class="studio-label">Project URL</label>
+          <div class="studio-input-box">
+            <input id="projUrlInput" type="text" class="studio-text-input studio-text-mono" value="https://arhylsion.github.io/ghgraph/" placeholder="https://example.com" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-group">
+          <span class="studio-label">Card Width</span>
+          <div id="projWidthPills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-width="full" type="button" role="tab" aria-selected="true">Featured (100%)</button>
+            <button class="studio-pill" data-width="half" type="button" role="tab" aria-selected="false">2-Col Grid (49%)</button>
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="projImageInput" class="studio-label">Cover Screenshot (optional — path like <code>assets/preview.png</code> or upload to inline)</label>
+          <div class="studio-fetch-row">
+            <div class="studio-input-box">
+              <input id="projImageInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="Leave empty for clean M3 studio preview frame" spellcheck="false">
+            </div>
+            <input id="projImageFile" type="file" accept="image/*" hidden>
+            <button id="projImageUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload project screenshot">Upload</button>
+            <button id="projImageClearBtn" class="studio-action-btn studio-painted-btn" type="button" hidden title="Remove screenshot">Reset</button>
+            <button id="downloadWorkHeaderBtn" class="studio-action-btn studio-painted-btn" type="button" title="Download matching 'Selected work.' section header Dark & Light SVGs">Section Header SVGs</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabContactControls" class="studio-controls-bar studio-grid-2" hidden>
+        <div class="studio-input-wrap">
+          <label for="contactTitleInput" class="studio-label">Heading Bold</label>
+          <div class="studio-input-box">
+            <input id="contactTitleInput" type="text" class="studio-text-input" value="Say hi." placeholder="Say hi." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="contactSubtitleInput" class="studio-label">Heading Muted</label>
+          <div class="studio-input-box">
+            <input id="contactSubtitleInput" type="text" class="studio-text-input" value="Tell me what's slowing you down." placeholder="Let's build something together." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-group studio-field-full">
+          <div class="studio-label-row">
+            <span class="studio-label">Export Format</span>
+            <span id="contactIconStatus" class="studio-fetch-status"></span>
+          </div>
+          <div id="contactModePills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-cmode="card" type="button" role="tab" aria-selected="true">Unified Card (1 SVG)</button>
+            <button class="studio-pill" data-cmode="pills" type="button" role="tab" aria-selected="false">Clickable Social Pills (Per-Link SVGs)</button>
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="contactItemsInput" class="studio-label">Socials (<code>Platform | URL</code>, one per line — icons fetched from Simple Icons)</label>
+          <textarea id="contactItemsInput" class="studio-textarea studio-text-mono" rows="4" spellcheck="false">GitHub | https://github.com/arhylsion
+LinkedIn | https://linkedin.com/in/arhylsion
+X | https://x.com/arhylsion
+Instagram | https://instagram.com/arhylsion
+WhatsApp | https://wa.me/628123456789
+Luma | https://lu.ma/arhylsion</textarea>
+          <div id="contactQuickPicks" class="stack-quick-picks" aria-label="Quick toggle social platforms"></div>
+        </div>
+      </div>
+
+      <div id="tabQuoteControls" class="studio-controls-bar studio-grid-2" hidden>
+        <div class="studio-input-wrap studio-field-full">
+          <div class="studio-label-row">
+            <label for="quoteTextInput" class="studio-label">Developer Quote</label>
+            <button id="shuffleQuoteBtn" class="studio-action-btn" type="button" title="Pick a random classic developer quote">Shuffle Quote</button>
+          </div>
+          <div class="studio-input-box">
+            <input id="quoteTextInput" type="text" class="studio-text-input" value="Within a computer, natural language is unnatural." placeholder="Enter your favorite dev quote" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="quoteAuthorInput" class="studio-label">Author</label>
+          <div class="studio-input-box">
+            <input id="quoteAuthorInput" type="text" class="studio-text-input" value="Alan Perlis" placeholder="Author Name" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="quoteLabelInput" class="studio-label">Card Label</label>
+          <div class="studio-input-box">
+            <input id="quoteLabelInput" type="text" class="studio-text-input studio-text-mono" value="Random Dev Quote" placeholder="Dev Quote" spellcheck="false">
+          </div>
         </div>
       </div>
 
@@ -675,15 +808,27 @@
             <div class="studio-kit-toggles">
               <label class="studio-kit-chip">
                 <input id="includeHeroCheck" type="checkbox" checked class="studio-checkbox">
-                <span>Hero Banner</span>
+                <span>Hero</span>
               </label>
               <label class="studio-kit-chip">
                 <input id="includeHeatmapCheck" type="checkbox" checked class="studio-checkbox">
                 <span>Heatmap</span>
               </label>
               <label class="studio-kit-chip">
+                <input id="includeProjectCheck" type="checkbox" class="studio-checkbox">
+                <span>Project</span>
+              </label>
+              <label class="studio-kit-chip">
                 <input id="includeStackCheck" type="checkbox" checked class="studio-checkbox">
-                <span>Tech Stack</span>
+                <span>Stack</span>
+              </label>
+              <label class="studio-kit-chip">
+                <input id="includeQuoteCheck" type="checkbox" class="studio-checkbox">
+                <span>Quote</span>
+              </label>
+              <label class="studio-kit-chip">
+                <input id="includeContactCheck" type="checkbox" class="studio-checkbox">
+                <span>Contact</span>
               </label>
             </div>
             <button id="downloadKitBtn" class="studio-action-btn studio-copy-full-btn" type="button" title="Download Dark and Light SVG files for all selected cards">
@@ -797,6 +942,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
