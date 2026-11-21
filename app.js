@@ -463,6 +463,10 @@
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
   const workflowYamlOutput = document.getElementById('workflowYamlOutput');
   const workflowPanel = document.getElementById('workflowPanel');
+  const workflowInfoBtn = document.getElementById('workflowInfoBtn');
+  const workflowInfoModal = document.getElementById('workflowInfoModal');
+  const closeWorkflowInfoBtn = document.getElementById('closeWorkflowInfoBtn');
+  const ackWorkflowInfoBtn = document.getElementById('ackWorkflowInfoBtn');
   const staticNotePanel = document.getElementById('staticNotePanel');
   const downloadDarkSvgBtn = document.getElementById('downloadDarkSvgBtn');
   const downloadLightSvgBtn = document.getElementById('downloadLightSvgBtn');
@@ -1221,9 +1225,30 @@ jobs:
     }
   }
 
+  function openWorkflowInfoModal() {
+    if (workflowInfoModal) {
+      workflowInfoModal.removeAttribute('hidden');
+    }
+  }
+
+  function closeWorkflowInfoModal() {
+    if (workflowInfoModal) {
+      workflowInfoModal.setAttribute('hidden', '');
+    }
+  }
+
   function initProfileStudio() {
     if (openStudioBtn) openStudioBtn.addEventListener('click', openStudioModal);
     if (closeStudioBtn) closeStudioBtn.addEventListener('click', closeStudioModal);
+    if (workflowInfoBtn) workflowInfoBtn.addEventListener('click', openWorkflowInfoModal);
+    if (closeWorkflowInfoBtn) closeWorkflowInfoBtn.addEventListener('click', closeWorkflowInfoModal);
+    if (ackWorkflowInfoBtn) ackWorkflowInfoBtn.addEventListener('click', closeWorkflowInfoModal);
+
+    if (workflowInfoModal) {
+      workflowInfoModal.addEventListener('click', (e) => {
+        if (e.target === workflowInfoModal) closeWorkflowInfoModal();
+      });
+    }
 
     if (profileStudioModal) {
       profileStudioModal.addEventListener('click', (e) => {
@@ -1232,7 +1257,10 @@ jobs:
     }
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && profileStudioModal && !profileStudioModal.hasAttribute('hidden')) {
+      if (e.key !== 'Escape') return;
+      if (workflowInfoModal && !workflowInfoModal.hasAttribute('hidden')) {
+        closeWorkflowInfoModal();
+      } else if (profileStudioModal && !profileStudioModal.hasAttribute('hidden')) {
         closeStudioModal();
       }
     });
