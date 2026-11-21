@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import html
 import json
 import os
@@ -9,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -1049,6 +1051,346 @@ def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
     return 0
 
 
+WAKA_RANGE_LABELS = {
+    "all_time": "ALL TIME",
+    "last_7_days": "LAST 7 DAYS",
+    "last_30_days": "LAST 30 DAYS",
+    "last_6_months": "LAST 6 MONTHS",
+    "last_year": "LAST YEAR",
+}
+
+
+def fetch_wakatime_stats(
+    api_key: str,
+    time_range: str = "all_time",
+    limit: int = 5,
+) -> tuple[list[dict], str, str]:
+    """Fetch language coding activity statistics from the WakaTime REST API."""
+    encoded = base64.b64encode(f"{api_key}:".encode("utf-8")).decode("ascii")
+    url = f"https://wakatime.com/api/v1/users/current/stats/{time_range}"
+    headers = {
+        "Authorization": f"Basic {encoded}",
+        "Accept": "application/json",
+        "User-Agent": "ghgraph",
+    }
+
+    payload: dict | None = None
+    for attempt in range(3):
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                status = getattr(resp, "status", 200)
+                body = json.loads(resp.read().decode("utf-8"))
+                if status == 202 or body.get("data", {}).get("status") == "pending_update":
+                    if attempt < 2:
+                        time.sleep(3)
+                        continue
+                payload = body
+                break
+        except urllib.error.HTTPError as exc:
+            err_body = exc.read().decode("utf-8", errors="replace")
+            raise SystemExit(f"WakaTime API error {exc.code}: {err_body[:200]}") from exc
+        except urllib.error.URLError as exc:
+            raise SystemExit(f"WakaTime API network error: {exc.reason}") from exc
+
+    data = (payload or {}).get("data") or {}
+    raw_langs = data.get("languages") or []
+    languages: list[dict] = []
+    for item in raw_langs[: max(1, min(10, limit))]:
+        name = str(item.get("name") or "").strip()
+        if not name:
+            continue
+        languages.append({
+            "name": name,
+            "text": str(item.get("text") or "0 mins").strip(),
+            "percent": float(item.get("percent") or 0.0),
+        })
+
+    total_text = str(
+        data.get("human_readable_total_including_other_language")
+        or data.get("human_readable_total")
+        or ""
+    ).strip()
+    daily_avg = str(
+        data.get("human_readable_daily_average_including_other_language")
+        or data.get("human_readable_daily_average")
+        or ""
+    ).strip()
+    return languages, total_text, daily_avg
+
+
+def render_waka_bar_svg(
+    track_x: int,
+    y: int,
+    track_w: int,
+    ratio: float,
+    pct: float,
+    color: str,
+    surface_alt: str,
+    border_subtle: str,
+    dot_inactive: str,
+    delay: str,
+    bar_style: str,
+) -> str:
+    """Render the WakaTime progress visualization in bar, blocks, or braille vector style."""
+    clamped = min(1.0, max(0.0, ratio))
+    if bar_style == "blocks":
+        total_blocks = 25
+        exact = clamped * total_blocks
+        full_blocks = int(exact)
+        frac = exact - full_blocks
+        parts: list[str] = []
+        for i in range(total_blocks):
+            bx = f"{track_x + i * 14.25:.2f}"
+            by = y + 5
+            if i < full_blocks:
+                parts.append(f'<rect x="{bx}" y="{by}" width="11" height="10" rx="2.5" fill="{color}"/>')
+            elif i == full_blocks and (frac >= 0.14 or (pct > 0 and full_blocks == 0)):
+                op = "0.82" if frac >= 0.78 else ("0.56" if frac >= 0.45 else "0.32")
+                parts.append(f'<rect x="{bx}" y="{by}" width="11" height="10" rx="2.5" fill="{surface_alt}" stroke="{border_subtle}" stroke-width="0.6"/>')
+                parts.append(f'<rect x="{bx}" y="{by}" width="11" height="10" rx="2.5" fill="{color}" opacity="{op}"/>')
+            else:
+                parts.append(f'<rect x="{bx}" y="{by}" width="11" height="10" rx="2.5" fill="{surface_alt}" stroke="{border_subtle}" stroke-width="0.6"/>')
+        return "".join(parts)
+
+    if bar_style == "braille":
+        total_cells = 24
+        exact = clamped * total_cells
+        full_cells = int(exact)
+        frac = exact - full_cells
+        base_x = track_x + 4.0
+        base_y = y + 5.5
+        parts = []
+        for i in range(total_cells):
+            if i < full_cells:
+                active_rows = 4
+            elif i == full_cells:
+                if frac >= 0.80:
+                    active_rows = 4
+                elif frac >= 0.58:
+                    active_rows = 3
+                elif frac >= 0.34:
+                    active_rows = 2
+                elif frac >= 0.12 or (pct > 0 and full_cells == 0):
+                    active_rows = 1
+                else:
+                    active_rows = 0
+            else:
+                active_rows = 0
+
+            cx0 = base_x + i * 14.8
+            for row in range(4):
+                is_active = row >= (4 - active_rows)
+                dot_fill = color if is_active else dot_inactive
+                cy = f"{base_y + row * 3.0:.1f}"
+                parts.append(f'<circle cx="{cx0:.1f}" cy="{cy}" r="1.15" fill="{dot_fill}"/>')
+                parts.append(f'<circle cx="{cx0 + 4.0:.1f}" cy="{cy}" r="1.15" fill="{dot_fill}"/>')
+        return "".join(parts)
+
+    fill_w = max(4.0, round(track_w * clamped, 1)) if pct > 0 else 0.0
+    bar_rect = (
+        f'<rect class="gh-wbar" x="{track_x}" y="{y + 6}" width="{fill_w}" height="8" rx="4" fill="{color}" style="animation-delay:{delay};"/>'
+        if fill_w > 0
+        else ""
+    )
+    return (
+        f'<rect x="{track_x}" y="{y + 6}" width="{track_w}" height="8" rx="4" fill="{surface_alt}" stroke="{border_subtle}" stroke-width="0.75"/>\n'
+        f'    {bar_rect}'
+    )
+
+
+def render_waka_svg_card(
+    languages: list[dict],
+    time_range: str = "all_time",
+    total_text: str = "",
+    daily_avg: str = "",
+    title: str = "Coding Activity.",
+    subtitle: str = "",
+    theme: str = "dark",
+    show_summary: bool = True,
+    bar_scale: str = "percent",
+    bar_style: str = "bar",
+) -> str:
+    """Render an unbranded M3 Expressive Pastel WakaTime Metrics SVG card."""
+    is_dark = theme == "dark"
+    bg = "#1a181c" if is_dark else "#ffffff"
+    surface_alt = "#211e23" if is_dark else "#f5eff7"
+    border = "rgba(206, 196, 207, 0.12)" if is_dark else "rgba(78, 68, 82, 0.14)"
+    border_subtle = "rgba(206, 196, 207, 0.08)" if is_dark else "rgba(78, 68, 82, 0.10)"
+    dot_inactive = "rgba(206, 196, 207, 0.16)" if is_dark else "rgba(78, 68, 82, 0.16)"
+    text_col = "#ebe4eb" if is_dark else "#1d1a20"
+    text_muted = "#cec4cf" if is_dark else "#4e4452"
+    text_dim = "#9a919c" if is_dark else "#7d7281"
+    accent_container = "#533571" if is_dark else "#efddff"
+    on_accent_container = "#efddff" if is_dark else "#270747"
+
+    row_colors = (
+        ["#d9b9ff", "#8af2b3", "#fca5b9", "#e9c661", "#a8d8ff"]
+        if is_dark
+        else ["#6e4d8e", "#1d7e44", "#ec4899", "#8a3c27", "#2563eb"]
+    )
+
+    clean_title = html.escape((title or "").strip() or "Coding Activity.")
+    clean_sub = html.escape((subtitle or "").strip())
+    range_label = html.escape(WAKA_RANGE_LABELS.get(time_range, "ALL TIME"))
+    sub_span = f'\n    <tspan dx="6" font-weight="400" fill="{text_dim}">{clean_sub}</tspan>' if clean_sub else ""
+
+    badge_w = max(84, len(range_label) * 7 + 26)
+    badge_x = 820 - 32 - badge_w
+
+    track_x = 186
+    track_w = 354
+    start_y = 78
+    row_step = 34
+
+    max_pct = max((float(item.get("percent") or 0.0) for item in languages), default=100.0)
+    if max_pct <= 0:
+        max_pct = 100.0
+
+    rows_parts: list[str] = []
+    if not languages:
+        rows_parts.append(
+            f'  <text x="32" y="102" font-family="\'JetBrains Mono\', monospace" font-size="12.5" fill="{text_dim}">No coding activity reported for this time range.</text>'
+        )
+        content_bottom = 122
+    else:
+        for idx, item in enumerate(languages):
+            y = start_y + idx * row_step
+            color = row_colors[idx % len(row_colors)]
+            raw_name = str(item.get("name") or "Unknown").strip()
+            if len(raw_name) > 17:
+                raw_name = raw_name[:16].rstrip() + "\u2026"
+            clean_name = html.escape(raw_name)
+            clean_dur = html.escape(str(item.get("text") or "").strip())
+            pct = max(0.0, min(100.0, float(item.get("percent") or 0.0)))
+            pct_str = f"{pct:05.2f}%"
+            ratio = (pct / max_pct) if bar_scale == "relative" else (pct / 100.0)
+            delay = f"{0.055 * idx:.3f}s"
+
+            bar_svg = render_waka_bar_svg(
+                track_x=track_x,
+                y=y,
+                track_w=track_w,
+                ratio=ratio,
+                pct=pct,
+                color=color,
+                surface_alt=surface_alt,
+                border_subtle=border_subtle,
+                dot_inactive=dot_inactive,
+                delay=delay,
+                bar_style=bar_style,
+            )
+
+            rows_parts.append(
+                f'  <g class="gh-wrow" style="animation-delay:{delay};">\n'
+                f'    <circle cx="38" cy="{y + 10}" r="4" fill="{color}"/>\n'
+                f'    <text x="52" y="{y + 14}" font-family="\'Outfit\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif" font-size="13.5" font-weight="600" fill="{text_col}">{clean_name}</text>\n'
+                f'    {bar_svg}\n'
+                f'    <text x="694" y="{y + 14}" text-anchor="end" font-family="\'JetBrains Mono\', monospace" font-size="12" font-weight="400" fill="{text_muted}">{clean_dur}</text>\n'
+                f'    <text x="788" y="{y + 14}" text-anchor="end" font-family="\'JetBrains Mono\', monospace" font-size="12" font-weight="600" fill="{color}">{pct_str}</text>\n'
+                f'  </g>'
+            )
+        content_bottom = start_y + len(languages) * row_step
+
+    summary_parts: list[str] = []
+    if show_summary and (total_text or daily_avg):
+        if total_text:
+            summary_parts.append(f"Total: {total_text}")
+        if daily_avg:
+            summary_parts.append(f"Daily avg: {daily_avg}")
+
+    footer_svg = ""
+    if summary_parts:
+        div_y = content_bottom + 8
+        foot_y = div_y + 24
+        clean_summary = html.escape(" \u00b7 ".join(summary_parts))
+        footer_svg = (
+            f'  <line x1="32" y1="{div_y}" x2="788" y2="{div_y}" stroke="{border_subtle}" stroke-width="1"/>\n'
+            f'  <text x="32" y="{foot_y}" font-family="\'JetBrains Mono\', monospace" font-size="11.5" font-weight="500" fill="{text_dim}">{clean_summary}</text>\n'
+        )
+        h = foot_y + 24
+    else:
+        h = content_bottom + 20
+
+    rows_joined = "\n".join(rows_parts)
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 {h}" width="820" height="{h}" fill="none">
+  <style>
+    .gh-wrow {{ opacity: 0; animation: ghWakaRow 0.42s cubic-bezier(0.2, 0, 0, 1) forwards; }}
+    .gh-wbar {{ transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: ghWakaBar 0.72s cubic-bezier(0.2, 0, 0, 1) forwards; }}
+    @keyframes ghWakaRow {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+    @keyframes ghWakaBar {{ from {{ transform: scaleX(0); }} to {{ transform: scaleX(1); }} }}
+  </style>
+  <rect width="820" height="{h}" rx="16" fill="{bg}" stroke="{border}" stroke-width="1"/>
+  <text x="32" y="46" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" letter-spacing="-0.02em">
+    <tspan font-weight="700" fill="{text_col}">{clean_title}</tspan>{sub_span}
+  </text>
+  <g transform="translate({badge_x}, 26)">
+    <rect width="{badge_w}" height="24" rx="12" fill="{accent_container}"/>
+    <text x="{badge_w / 2:.1f}" y="15.5" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="{on_accent_container}">{range_label}</text>
+  </g>
+{rows_joined}
+{footer_svg}</svg>
+"""
+
+
+def execute_waka_generation(args: argparse.Namespace) -> int:
+    """Fetch WakaTime coding activity and write M3 Expressive SVG card(s) to disk."""
+    api_key = (args.waka_key or os.environ.get("WAKATIME_API_KEY") or "").strip()
+    if not api_key:
+        print(
+            "--waka requires a WakaTime API key (set WAKATIME_API_KEY or pass --waka-key).",
+            file=sys.stderr,
+        )
+        return 2
+
+    languages, total_text, daily_avg = fetch_wakatime_stats(
+        api_key=api_key,
+        time_range=args.waka_range,
+        limit=args.waka_limit,
+    )
+    show_summary = not args.no_stats
+    out_path = Path(args.output or "assets")
+    themes = ["dark", "light"] if args.theme == "both" else [args.theme]
+
+    if len(themes) == 1 and out_path.suffix.lower() == ".svg":
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        svg_text = render_waka_svg_card(
+            languages=languages,
+            time_range=args.waka_range,
+            total_text=total_text,
+            daily_avg=daily_avg,
+            title=args.waka_title,
+            subtitle=args.waka_subtitle,
+            theme=themes[0],
+            show_summary=show_summary,
+            bar_scale=args.waka_scale,
+            bar_style=args.waka_style,
+        )
+        out_path.write_text(svg_text, encoding="utf-8")
+        print(f"generated {out_path} ({len(languages)} languages, range={args.waka_range}, scale={args.waka_scale}, style={args.waka_style})")
+    else:
+        out_path.mkdir(parents=True, exist_ok=True)
+        for t in themes:
+            target = out_path / f"ghgraph-waka-{t}.svg"
+            svg_text = render_waka_svg_card(
+                languages=languages,
+                time_range=args.waka_range,
+                total_text=total_text,
+                daily_avg=daily_avg,
+                title=args.waka_title,
+                subtitle=args.waka_subtitle,
+                theme=t,
+                show_summary=show_summary,
+                bar_scale=args.waka_scale,
+                bar_style=args.waka_style,
+            )
+            target.write_text(svg_text, encoding="utf-8")
+            print(f"generated {target} ({len(languages)} languages, range={args.waka_range}, scale={args.waka_scale}, style={args.waka_style})")
+
+    return 0
+
+
 def resolve_author_identity(
     api: GitHubAPI,
     name_arg: str | None,
@@ -1254,6 +1596,26 @@ def build_parser() -> argparse.ArgumentParser:
     vis.add_argument("--private", action="store_true",
                      help="for --card: fetch all public and private contributions (requires PAT token)")
 
+    p.add_argument("--waka", action="store_true",
+                   help="generate M3 SVG WakaTime Metrics card(s) for Profile README")
+    p.add_argument("--waka-key", help="WakaTime API key (default: $WAKATIME_API_KEY)")
+    p.add_argument(
+        "--waka-range",
+        choices=["all_time", "last_7_days", "last_30_days", "last_6_months", "last_year"],
+        default="all_time",
+        help="WakaTime stats time range for --waka (default: all_time)",
+    )
+    p.add_argument("--waka-limit", type=int, default=5,
+                   help="number of top languages for --waka, 1..10 (default: 5)")
+    p.add_argument("--waka-scale", choices=["percent", "relative"], default="percent",
+                   help="bar width scaling for --waka: true percent or relative to top language (default: percent)")
+    p.add_argument("--waka-style", choices=["bar", "blocks", "braille"], default="bar",
+                   help="progress visualization style for --waka: bar, blocks, or braille (default: bar)")
+    p.add_argument("--waka-title", default="Coding Activity.",
+                   help="bold heading for --waka card (default: 'Coding Activity.')")
+    p.add_argument("--waka-subtitle", default="",
+                   help="muted subtitle for --waka card")
+
     p.add_argument("--dry-run", action="store_true", help="print the plan, touch nothing")
     p.add_argument("-y", "--yes", action="store_true", help="skip the confirmation prompt")
     return p
@@ -1275,8 +1637,15 @@ def main(argv: list[str] | None = None) -> int:
     rng = random.Random(args.seed)
     token = args.token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
 
-    if args.card:
-        return execute_card_generation(args, token)
+    if args.card or args.waka:
+        rc = 0
+        if args.card:
+            rc = execute_card_generation(args, token)
+            if rc != 0:
+                return rc
+        if args.waka:
+            rc = execute_waka_generation(args)
+        return rc
 
     blocked_dates: set[date] = set()
     if args.only_empty:

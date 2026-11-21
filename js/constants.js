@@ -23,7 +23,8 @@ export const STUDIO_CARDS = [
   { id: 'stack', label: 'Tech Stack', desc: 'Dynamic Simple Icons tool pills' },
   { id: 'project', label: 'Project', desc: 'Drag-and-drop bento work canvas & icon picker' },
   { id: 'contact', label: 'Contact', desc: 'Social media links with Simple Icons' },
-  { id: 'quote', label: 'Dev Quote', desc: 'M3 styled random or custom dev quote' }
+  { id: 'quote', label: 'Dev Quote', desc: 'M3 styled random or custom dev quote' },
+  { id: 'waka', label: 'WakaTime Metrics', desc: 'M3 coding activity & language breakdown' }
 ];
 
 export const DEV_QUOTES = [

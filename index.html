@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/tokens.css?v=11">
   <link rel="stylesheet" href="css/base.css?v=11">
   <link rel="stylesheet" href="css/painter.css?v=11">
-  <link rel="stylesheet" href="css/studio.css?v=11">
+  <link rel="stylesheet" href="css/studio.css?v=14">
 </head>
 <body>
   <div class="page-container">
@@ -509,7 +509,7 @@
         </button>
       </div>
 
-      <p class="studio-modal-lede">Build a cohesive M3 Expressive Profile Kit (Heatmap, Hero Banner, Tech Stack, Project, Contact &amp; Dev Quote) with automatic Dark &amp; Light pairs for your <code>username/username</code> repository.</p>
+      <p class="studio-modal-lede">Build a cohesive M3 Expressive Profile Kit (Heatmap, Hero Banner, Tech Stack, Project, Contact, Dev Quote &amp; WakaTime Metrics) with automatic Dark &amp; Light pairs for your <code>username/username</code> repository.</p>
 
       <div class="studio-top-bar">
         <div id="studioSearchWrap" class="studio-search-wrap">
@@ -518,7 +518,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input id="studioCardSearch" type="text" class="studio-search-input" placeholder="Search cards (Heatmap, Hero, Stack, Project, Contact, Quote)..." autocomplete="off" spellcheck="false" aria-label="Search profile cards">
+            <input id="studioCardSearch" type="text" class="studio-search-input" placeholder="Search cards (Heatmap, Hero, Stack, Project, Contact, Quote, WakaTime)..." autocomplete="off" spellcheck="false" aria-label="Search profile cards">
             <span id="studioActiveCardPill" class="studio-active-pill">Heatmap</span>
           </div>
           <div id="studioSearchMenu" class="studio-search-menu" role="listbox" hidden></div>
@@ -813,6 +813,80 @@
         </div>
       </div>
 
+      <div id="tabWakaControls" class="studio-controls-bar studio-grid-2" hidden>
+        <div class="studio-input-wrap">
+          <label for="wakaTitleInput" class="studio-label">Heading Bold</label>
+          <div class="studio-input-box">
+            <input id="wakaTitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Coding Activity." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="wakaSubtitleInput" class="studio-label">Heading Muted</label>
+          <div class="studio-input-box">
+            <input id="wakaSubtitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Time spent in editors." spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-group">
+          <span class="studio-label">Time Range</span>
+          <div id="wakaRangePills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-range="all_time" type="button" role="tab" aria-selected="true">All Time</button>
+            <button class="studio-pill" data-range="last_7_days" type="button" role="tab" aria-selected="false">7 Days</button>
+            <button class="studio-pill" data-range="last_30_days" type="button" role="tab" aria-selected="false">30 Days</button>
+            <button class="studio-pill" data-range="last_year" type="button" role="tab" aria-selected="false">Year</button>
+          </div>
+        </div>
+
+        <div class="studio-grid-2-inline">
+          <div class="studio-group">
+            <span class="studio-label">Bar Scale</span>
+            <div id="wakaScalePills" class="studio-pills" role="tablist">
+              <button class="studio-pill active" data-scale="percent" type="button" role="tab" aria-selected="true">True %</button>
+              <button class="studio-pill" data-scale="relative" type="button" role="tab" aria-selected="false">Relative</button>
+            </div>
+          </div>
+
+          <div class="studio-group">
+            <span class="studio-label">Top</span>
+            <div id="wakaLimitPills" class="studio-pills" role="tablist">
+              <button class="studio-pill active" data-limit="5" type="button" role="tab" aria-selected="true">5</button>
+              <button class="studio-pill" data-limit="6" type="button" role="tab" aria-selected="false">6</button>
+              <button class="studio-pill" data-limit="8" type="button" role="tab" aria-selected="false">8</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-group">
+          <span class="studio-label">Bar Style</span>
+          <div id="wakaStylePills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-style="bar" type="button" role="tab" aria-selected="true">Bar</button>
+            <button class="studio-pill" data-style="blocks" type="button" role="tab" aria-selected="false">Blocks</button>
+            <button class="studio-pill" data-style="braille" type="button" role="tab" aria-selected="false">Braille</button>
+          </div>
+        </div>
+
+        <div class="studio-group">
+          <span class="studio-label">Delivery Mode</span>
+          <div id="wakaModePills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-wmode="action" type="button" role="tab" aria-selected="true">GitHub Action</button>
+            <button class="studio-pill" data-wmode="static" type="button" role="tab" aria-selected="false">Static SVG</button>
+          </div>
+        </div>
+
+        <div class="studio-group studio-toggle-group studio-field-full">
+          <label class="studio-checkbox-label">
+            <input id="wakaSummaryToggle" type="checkbox" checked class="studio-checkbox">
+            <span>Include summary footer</span>
+          </label>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="wakaItemsInput" class="studio-label">Preview Data (<code>Language | Duration | Percent</code> or paste raw WakaTime block directly)</label>
+          <textarea id="wakaItemsInput" class="studio-textarea studio-text-mono" rows="5" spellcheck="false" placeholder="e.g.&#10;Python | 65 hrs 29 mins | 19.21&#10;TypeScript | 30 hrs 16 mins | 8.88&#10;or paste raw waka-readme output directly"></textarea>
+        </div>
+      </div>
+
       <div class="studio-preview-section">
         <div class="studio-preview-header">
           <span id="studioPreviewTag" class="preview-tag">Animated Heatmap Preview</span>
@@ -854,7 +928,7 @@
           <div class="code-panel-heading-row">
             <div class="code-panel-heading">
               <span id="snippetPanelTitle" class="code-panel-title">1. Embed snippet for your <code>README.md</code></span>
-              <span id="snippetPanelDesc" class="code-panel-desc">Follow-through 3-card layout with automatic GitHub Dark &amp; Light switching</span>
+              <span id="snippetPanelDesc" class="code-panel-desc">Multi-card layout with automatic GitHub Dark &amp; Light switching</span>
             </div>
             <div id="embedScopePills" class="studio-pills" role="tablist" aria-label="Embed Scope">
               <button class="studio-pill active" data-scope="kit" type="button" role="tab" aria-selected="true">Full Kit</button>
@@ -871,6 +945,10 @@
               <label class="studio-kit-chip">
                 <input id="includeHeatmapCheck" type="checkbox" checked class="studio-checkbox">
                 <span>Heatmap</span>
+              </label>
+              <label class="studio-kit-chip">
+                <input id="includeWakaCheck" type="checkbox" class="studio-checkbox">
+                <span>WakaTime</span>
               </label>
               <label class="studio-kit-chip">
                 <input id="includeProjectCheck" type="checkbox" class="studio-checkbox">
@@ -913,7 +991,7 @@
         <div id="workflowPanel" class="studio-code-item">
           <div class="code-panel-heading">
             <span class="code-panel-title workflow-title-row">
-              <span>2. GitHub Actions Workflow (Save to <code>.github/workflows/ghgraph.yml</code>)</span>
+              <span id="workflowPanelTitleText">2. GitHub Actions Workflow (Save to <code>.github/workflows/ghgraph.yml</code>)</span>
               <button id="workflowInfoBtn" class="info-icon-btn" type="button" aria-label="How to include private contributions with a PAT" title="Include private contributions (PAT setup guide)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -922,7 +1000,7 @@
                 </svg>
               </button>
             </span>
-            <span class="code-panel-desc">Runs daily at 00:00 UTC and generates both animated dark &amp; light SVGs into <code>assets/</code></span>
+            <span id="workflowPanelDesc" class="code-panel-desc">Runs daily at 00:00 UTC and generates both animated dark &amp; light SVGs into <code>assets/</code></span>
           </div>
           <div class="code-terminal-block">
             <pre><code id="workflowYamlOutput"></code></pre>
@@ -956,7 +1034,7 @@
         </button>
       </div>
 
-      <ol class="pat-steps-list">
+      <ol id="patGuideBody" class="pat-steps-list">
         <li>
           <strong>Create a Token on Your GitHub Account</strong>
           <ul>
@@ -994,12 +1072,54 @@
         </li>
       </ol>
 
+      <ol id="wakaGuideBody" class="pat-steps-list" hidden>
+        <li>
+          <strong>Verify WakaTime Tracking on Your Account</strong>
+          <ul>
+            <li>Make sure the WakaTime extension is active in your editor (VS Code, Cursor, JetBrains, Neovim, etc.) and recent language activity appears on <strong>wakatime.com/dashboard</strong>.</li>
+            <li>If <code>all_time</code> has not finished computing on a new account, switch <strong>Time Range</strong> to <code>7 Days</code> or <code>30 Days</code>.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Copy Your WakaTime Secret API Key</strong>
+          <ul>
+            <li>Open <strong>wakatime.com/settings/api-key</strong> (Account Settings &rarr; API Key).</li>
+            <li>Copy your <strong>Secret API Key</strong> (starts with <code>waka_</code>). Keep this key private and never commit it directly into your repository.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Save <code>WAKATIME_API_KEY</code> in Repository Secrets</strong>
+          <ul>
+            <li>Open your profile repository on GitHub (<code>username/username</code>).</li>
+            <li>Go to <strong>Settings</strong> &rarr; <strong>Secrets and variables</strong> &rarr; <strong>Actions</strong> &rarr; <strong>New repository secret</strong>.</li>
+            <li>Set <strong>Name</strong> to <code>WAKATIME_API_KEY</code>, paste your <code>waka_...</code> key into <strong>Secret</strong>, and click <strong>Add secret</strong>.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Save <code>.github/workflows/waka.yml</code> &amp; Trigger First Run</strong>
+          <p>Commit the generated workflow below (auto-syncs every 2 hours), then open <strong>Actions</strong> &rarr; <strong>Refresh WakaTime Metrics</strong> &rarr; <strong>Run workflow</strong> to generate <code>assets/ghgraph-waka-{dark,light}.svg</code> immediately:</p>
+          <div class="code-terminal-block pat-snippet-block">
+            <pre><code>      - name: Generate WakaTime Metrics Cards
+        env:
+          WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+        run: |
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+          python3 ghgraph.py --waka --waka-range all_time --waka-limit 5 --waka-scale percent --theme both --output assets/
+          rm -f ghgraph.py</code></pre>
+            <button class="terminal-copy-btn" aria-label="Copy WakaTime yaml snippet" title="Copy to clipboard">
+              <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+        </li>
+      </ol>
+
       <div class="tos-footer">
         <button id="ackWorkflowInfoBtn" class="tos-ack-btn" type="button">Got It</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=12"></script>
+  <script type="module" src="js/main.js?v=14"></script>
 </body>
 </html>

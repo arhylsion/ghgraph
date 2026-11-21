@@ -25,6 +25,7 @@ import { buildTechStackSvg } from '../svg/stack.js';
 import { buildSectionHeaderSvg, buildProjectCardSvg, getProjectMonogram } from '../svg/project.js';
 import { parseContactLines, buildSocialPillSvg, buildContactCardSvg } from '../svg/contact.js';
 import { buildDevQuoteSvg } from '../svg/quote.js';
+import { buildWakaMetricsSvg } from '../svg/waka.js';
 import {
   projectItems,
   studioState,
@@ -38,7 +39,7 @@ import {
   toggleProjectItemWidth
 } from './state.js';
 import { renderProjectIconSuggestMenu, renderProjectBentoCanvas } from './bento.js';
-import { getAssetPrefixByType, buildKitMarkdown, buildWorkflowYaml } from './export.js';
+import { getAssetPrefixByType, buildKitMarkdown, buildWorkflowYaml, buildWakaWorkflowYaml } from './export.js';
 
 export function initProfileStudio() {
   const profileStudioModal = document.getElementById('profileStudioModal');
@@ -55,6 +56,7 @@ export function initProfileStudio() {
   const tabProjectControls = document.getElementById('tabProjectControls');
   const tabContactControls = document.getElementById('tabContactControls');
   const tabQuoteControls = document.getElementById('tabQuoteControls');
+  const tabWakaControls = document.getElementById('tabWakaControls');
   const studioUsername = document.getElementById('studioUsername');
   const fetchContribBtn = document.getElementById('fetchContribBtn');
   const usePaintedBtn = document.getElementById('usePaintedBtn');
@@ -113,12 +115,22 @@ export function initProfileStudio() {
   const quoteAuthorInput = document.getElementById('quoteAuthorInput');
   const quoteLabelInput = document.getElementById('quoteLabelInput');
   const shuffleQuoteBtn = document.getElementById('shuffleQuoteBtn');
+  const wakaTitleInput = document.getElementById('wakaTitleInput');
+  const wakaSubtitleInput = document.getElementById('wakaSubtitleInput');
+  const wakaRangePills = document.getElementById('wakaRangePills');
+  const wakaScalePills = document.getElementById('wakaScalePills');
+  const wakaStylePills = document.getElementById('wakaStylePills');
+  const wakaLimitPills = document.getElementById('wakaLimitPills');
+  const wakaModePills = document.getElementById('wakaModePills');
+  const wakaSummaryToggle = document.getElementById('wakaSummaryToggle');
+  const wakaItemsInput = document.getElementById('wakaItemsInput');
   const studioPreviewTag = document.getElementById('studioPreviewTag');
   const studioSvgPreview = document.getElementById('studioSvgPreview');
   const embedScopePills = document.getElementById('embedScopePills');
   const kitChecklistRow = document.getElementById('kitChecklistRow');
   const includeHeroCheck = document.getElementById('includeHeroCheck');
   const includeHeatmapCheck = document.getElementById('includeHeatmapCheck');
+  const includeWakaCheck = document.getElementById('includeWakaCheck');
   const includeProjectCheck = document.getElementById('includeProjectCheck');
   const includeStackCheck = document.getElementById('includeStackCheck');
   const includeQuoteCheck = document.getElementById('includeQuoteCheck');
@@ -128,6 +140,9 @@ export function initProfileStudio() {
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
   const workflowYamlOutput = document.getElementById('workflowYamlOutput');
   const workflowPanel = document.getElementById('workflowPanel');
+  const workflowPanelTitleText = document.getElementById('workflowPanelTitleText');
+  const workflowPanelDesc = document.getElementById('workflowPanelDesc');
+  const workflowInfoBtn = document.getElementById('workflowInfoBtn');
   const workflowInfoModal = document.getElementById('workflowInfoModal');
   const staticNotePanel = document.getElementById('staticNotePanel');
   const downloadDarkSvgBtn = document.getElementById('downloadDarkSvgBtn');
@@ -438,6 +453,19 @@ export function initProfileStudio() {
         theme
       );
     }
+    if (type === 'waka') {
+      return buildWakaMetricsSvg({
+        title: wakaTitleInput ? wakaTitleInput.value : '',
+        subtitle: wakaSubtitleInput ? wakaSubtitleInput.value : '',
+        rawText: wakaItemsInput ? wakaItemsInput.value : '',
+        timeRange: studioState.wakaRange,
+        limit: studioState.wakaLimit,
+        barScale: studioState.wakaScale,
+        barStyle: studioState.wakaStyle,
+        showSummary: wakaSummaryToggle ? wakaSummaryToggle.checked : true,
+        theme
+      });
+    }
     const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
     return buildProfileCardSvg(username, theme, showStats, studioState.anim, getPaintedGrid(), studioState.fetchedState);
   }
@@ -446,6 +474,7 @@ export function initProfileStudio() {
     const types = [];
     if (includeHeroCheck && includeHeroCheck.checked) types.push('hero');
     if (includeHeatmapCheck && includeHeatmapCheck.checked) types.push('heatmap');
+    if (includeWakaCheck && includeWakaCheck.checked) types.push('waka');
     if (includeProjectCheck && includeProjectCheck.checked) types.push('project');
     if (includeStackCheck && includeStackCheck.checked) types.push('stack');
     if (includeQuoteCheck && includeQuoteCheck.checked) types.push('quote');
@@ -516,7 +545,8 @@ export function initProfileStudio() {
         stack: 'Tech Stack Preview (Dynamic Simple Icons)',
         project: `Interactive Bento Canvas (${projectItems.length} ${projectItems.length === 1 ? 'Project' : 'Projects'} \u00b7 Drag to Reorder)`,
         contact: studioState.contactMode === 'pills' ? 'Contact Preview (Clickable Social Pills)' : 'Contact Card Preview (Unified SVG)',
-        quote: 'Dev Quote Preview (M3 Expressive)'
+        quote: 'Dev Quote Preview (M3 Expressive)',
+        waka: `WakaTime Metrics Preview (${studioState.wakaStyle.charAt(0).toUpperCase() + studioState.wakaStyle.slice(1)} \u00b7 ${studioState.wakaScale === 'relative' ? 'Relative' : 'True %'})`
       };
       studioPreviewTag.textContent = tagMap[studioState.tab] || 'Card Preview';
     }
@@ -557,8 +587,11 @@ export function initProfileStudio() {
       requiredFilesHint.innerHTML = `Required files in your repository: ${files.join(' \u00b7 ')}`;
     }
 
+    const showHeatmapWorkflow = studioState.tab === 'heatmap' && studioState.mode === 'action';
+    const showWakaWorkflow = studioState.tab === 'waka' && studioState.wakaMode === 'action';
+
     if (workflowPanel && staticNotePanel) {
-      if (studioState.tab === 'heatmap' && studioState.mode === 'action') {
+      if (showHeatmapWorkflow || showWakaWorkflow) {
         workflowPanel.style.display = 'block';
         staticNotePanel.setAttribute('hidden', '');
       } else {
@@ -567,12 +600,45 @@ export function initProfileStudio() {
       }
     }
 
+    if (workflowInfoBtn) {
+      workflowInfoBtn.toggleAttribute('hidden', !(showHeatmapWorkflow || showWakaWorkflow));
+      if (showWakaWorkflow) {
+        workflowInfoBtn.setAttribute('aria-label', 'How to set up WAKATIME_API_KEY and waka.yml');
+        workflowInfoBtn.title = 'WakaTime API Key & workflow setup guide';
+      } else {
+        workflowInfoBtn.setAttribute('aria-label', 'How to include private contributions with a PAT');
+        workflowInfoBtn.title = 'Include private contributions (PAT setup guide)';
+      }
+    }
+
+    if (workflowPanelTitleText && workflowPanelDesc) {
+      if (showWakaWorkflow) {
+        workflowPanelTitleText.innerHTML = '2. GitHub Actions Workflow (Save to <code>.github/workflows/waka.yml</code>)';
+        workflowPanelDesc.innerHTML = 'Runs every 2 hours using your <code>WAKATIME_API_KEY</code> secret and writes dark &amp; light SVGs into <code>assets/</code>';
+      } else {
+        workflowPanelTitleText.innerHTML = '2. GitHub Actions Workflow (Save to <code>.github/workflows/ghgraph.yml</code>)';
+        workflowPanelDesc.innerHTML = 'Runs daily at 00:00 UTC and generates both animated dark &amp; light SVGs into <code>assets/</code>';
+      }
+    }
+
     if (studioScopeGroup) {
       studioScopeGroup.toggleAttribute('hidden', studioState.mode !== 'action');
     }
 
     if (workflowYamlOutput) {
-      workflowYamlOutput.textContent = buildWorkflowYaml(studioState.anim, studioState.workflowScope, showStats);
+      if (showWakaWorkflow) {
+        workflowYamlOutput.textContent = buildWakaWorkflowYaml(
+          studioState.wakaRange,
+          studioState.wakaLimit,
+          studioState.wakaScale,
+          studioState.wakaStyle,
+          wakaSummaryToggle ? wakaSummaryToggle.checked : true,
+          wakaTitleInput ? wakaTitleInput.value : '',
+          wakaSubtitleInput ? wakaSubtitleInput.value : ''
+        );
+      } else {
+        workflowYamlOutput.textContent = buildWorkflowYaml(studioState.anim, studioState.workflowScope, showStats);
+      }
     }
   }
 
@@ -745,6 +811,7 @@ export function initProfileStudio() {
     if (tabProjectControls) tabProjectControls.toggleAttribute('hidden', cardId !== 'project');
     if (tabContactControls) tabContactControls.toggleAttribute('hidden', cardId !== 'contact');
     if (tabQuoteControls) tabQuoteControls.toggleAttribute('hidden', cardId !== 'quote');
+    if (tabWakaControls) tabWakaControls.toggleAttribute('hidden', cardId !== 'waka');
 
     if (cardId === 'stack' && stackItemsInput) syncDynamicTechIcons(stackItemsInput.value);
     if (cardId === 'contact' && contactItemsInput) syncDynamicContactIcons(contactItemsInput.value);
@@ -806,6 +873,18 @@ export function initProfileStudio() {
       e.stopPropagation();
     }
     const modal = document.getElementById('workflowInfoModal');
+    const titleEl = document.getElementById('workflowInfoTitle');
+    const patBody = document.getElementById('patGuideBody');
+    const wakaBody = document.getElementById('wakaGuideBody');
+    const isWaka = studioState.tab === 'waka';
+
+    if (titleEl) {
+      titleEl.textContent = isWaka
+        ? 'WakaTime API Key & Workflow Setup'
+        : 'Include Private Contributions (PAT Setup)';
+    }
+    if (patBody) patBody.toggleAttribute('hidden', isWaka);
+    if (wakaBody) wakaBody.toggleAttribute('hidden', !isWaka);
     if (modal) modal.removeAttribute('hidden');
   }
 
@@ -895,12 +974,17 @@ export function initProfileStudio() {
   wirePillGroup(studioModePills, 'mode', (val) => { studioState.mode = val; });
   wirePillGroup(studioScopePills, 'scope', (val) => { studioState.workflowScope = val; });
   wirePillGroup(contactModePills, 'cmode', (val) => { studioState.contactMode = val; });
+  wirePillGroup(wakaRangePills, 'range', (val) => { studioState.wakaRange = val; });
+  wirePillGroup(wakaScalePills, 'scale', (val) => { studioState.wakaScale = val; });
+  wirePillGroup(wakaStylePills, 'style', (val) => { studioState.wakaStyle = val; });
+  wirePillGroup(wakaLimitPills, 'limit', (val) => { studioState.wakaLimit = Number(val) || 5; });
+  wirePillGroup(wakaModePills, 'wmode', (val) => { studioState.wakaMode = val; });
   wirePillGroup(projWidthPills, 'width', (val) => {
     const cur = getSelectedProject();
     if (cur) cur.width = val;
   });
 
-  [includeHeroCheck, includeHeatmapCheck, includeProjectCheck, includeStackCheck, includeQuoteCheck, includeContactCheck].forEach(chk => {
+  [includeHeroCheck, includeHeatmapCheck, includeWakaCheck, includeProjectCheck, includeStackCheck, includeQuoteCheck, includeContactCheck].forEach(chk => {
     if (chk) chk.addEventListener('change', updateStudioPreview);
   });
 
@@ -1150,10 +1234,13 @@ export function initProfileStudio() {
     stackTitleInput, stackSubtitleInput,
     workTitleInput, workSubtitleInput,
     contactTitleInput, contactSubtitleInput,
-    quoteTextInput, quoteAuthorInput, quoteLabelInput
+    quoteTextInput, quoteAuthorInput, quoteLabelInput,
+    wakaTitleInput, wakaSubtitleInput, wakaItemsInput
   ].forEach(el => {
     if (el) el.addEventListener('input', updateStudioPreview);
   });
+
+  if (wakaSummaryToggle) wakaSummaryToggle.addEventListener('change', updateStudioPreview);
 
   if (stackItemsInput) {
     stackItemsInput.addEventListener('focus', openStackSuggest);

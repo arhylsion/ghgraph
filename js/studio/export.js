@@ -11,6 +11,7 @@ export function getAssetPrefixByType(type) {
   }
   if (type === 'contact') return 'ghgraph-contact';
   if (type === 'quote') return 'ghgraph-quote';
+  if (type === 'waka') return 'ghgraph-waka';
   return 'ghgraph';
 }
 
@@ -88,9 +89,56 @@ export function buildKitMarkdown(user, types, ctx) {
     if (type === 'quote') {
       return buildPictureSnippet(prefix, 'Dev Quote', '', '100%');
     }
+    if (type === 'waka') {
+      return buildPictureSnippet(prefix, `${u}'s WakaTime Metrics`, '', '100%');
+    }
     return buildPictureSnippet(prefix, `${u}'s Contribution Heatmap`, '', '100%');
   });
   return blocks.join('\n\n<br>\n\n');
+}
+
+export function buildWakaWorkflowYaml(range, limit, scale, style, showSummary, title, subtitle) {
+  const safeRange = range || 'all_time';
+  const safeLimit = Math.max(1, Math.min(10, Number(limit) || 5));
+  const scaleFlag = scale === 'relative' ? ' --waka-scale relative' : ' --waka-scale percent';
+  const styleVal = style === 'blocks' || style === 'braille' ? style : 'bar';
+  const styleFlag = styleVal !== 'bar' ? ` --waka-style ${styleVal}` : '';
+  const statsFlag = showSummary ? '' : ' --no-stats';
+  const cleanTitle = (title || '').trim().replace(/"/g, '\\"');
+  const cleanSub = (subtitle || '').trim().replace(/"/g, '\\"');
+  const titleFlag = cleanTitle ? ` --waka-title "${cleanTitle}"` : '';
+  const subFlag = cleanSub ? ` --waka-subtitle "${cleanSub}"` : '';
+
+  return `name: Refresh WakaTime Metrics
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-waka:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate WakaTime Metrics Cards
+        env:
+          WAKATIME_API_KEY: \${{ secrets.WAKATIME_API_KEY }}
+        run: |
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+          python3 ghgraph.py --waka --waka-range ${safeRange} --waka-limit ${safeLimit}${scaleFlag}${styleFlag}${titleFlag}${subFlag} --theme both --output assets/${statsFlag}
+          rm -f ghgraph.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/
+          git diff --staged --quiet || (git commit -m "chore: sync wakatime metrics cards" && git push)`;
 }
 
 export function buildWorkflowYaml(anim, workflowScope, showStats) {

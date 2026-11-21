@@ -728,6 +728,10 @@
   line-height: 1.55;
 }
 
+.pat-steps-list[hidden] {
+  display: none !important;
+}
+
 .pat-steps-list > li > strong {
   display: block;
   color: var(--text);
