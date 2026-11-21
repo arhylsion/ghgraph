@@ -503,23 +503,33 @@
         </button>
       </div>
 
-      <p class="studio-modal-lede">Generate an animated, theme-adaptive SVG contribution heatmap card for your special <code>username/username</code> repository.</p>
+      <p class="studio-modal-lede">Build a cohesive M3 Expressive Profile Kit (Hero Banner, Contribution Heatmap &amp; Tech Stack) with automatic Dark &amp; Light pairs for your <code>username/username</code> repository.</p>
 
-      <div class="studio-controls-bar">
-        <div class="studio-input-wrap">
-          <label for="studioUsername" class="studio-label">GitHub Username</label>
-          <div class="studio-input-box">
-            <span class="studio-at">@</span>
-            <input id="studioUsername" type="text" class="studio-text-input" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
-          </div>
+      <div class="studio-top-bar">
+        <div id="studioCardTabs" class="studio-pills studio-card-tabs" role="tablist" aria-label="Profile Kit Cards">
+          <button class="studio-pill active" data-tab="heatmap" type="button" role="tab" aria-selected="true">Heatmap</button>
+          <button class="studio-pill" data-tab="hero" type="button" role="tab" aria-selected="false">Hero Banner</button>
+          <button class="studio-pill" data-tab="stack" type="button" role="tab" aria-selected="false">Tech Stack</button>
         </div>
 
-        <div class="studio-group">
-          <span class="studio-label">M3 Theme</span>
-          <div id="studioThemePills" class="studio-pills" role="tablist">
-            <button class="studio-pill active" data-theme="dark" type="button" role="tab" aria-selected="true">Dark M3 Pastel</button>
-            <button class="studio-pill" data-theme="light" type="button" role="tab" aria-selected="false">Light M3 Pastel</button>
+        <div id="studioThemePills" class="studio-pills" role="tablist" aria-label="M3 Theme">
+          <button class="studio-pill active" data-theme="dark" type="button" role="tab" aria-selected="true">Dark M3 Pastel</button>
+          <button class="studio-pill" data-theme="light" type="button" role="tab" aria-selected="false">Light M3 Pastel</button>
+        </div>
+      </div>
+
+      <div id="tabHeatmapControls" class="studio-controls-bar">
+        <div class="studio-input-wrap">
+          <label for="studioUsername" class="studio-label">GitHub Username</label>
+          <div class="studio-fetch-row">
+            <div class="studio-input-box">
+              <span class="studio-at">@</span>
+              <input id="studioUsername" type="text" class="studio-text-input" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
+            </div>
+            <button id="fetchContribBtn" class="studio-fetch-btn" type="button" title="Fetch real public contributions from GitHub">Fetch</button>
+            <button id="usePaintedBtn" class="studio-action-btn" type="button" hidden title="Switch back to painted canvas">Painted</button>
           </div>
+          <span id="fetchStatusText" class="studio-fetch-status">Using painted canvas</span>
         </div>
 
         <div class="studio-group">
@@ -548,11 +558,57 @@
         </div>
       </div>
 
+      <div id="tabHeroControls" class="studio-controls-bar" hidden>
+        <div class="studio-input-wrap">
+          <label for="heroNameInput" class="studio-label">Display Name</label>
+          <div class="studio-input-box">
+            <input id="heroNameInput" type="text" class="studio-text-input studio-field-md" value="Arhylsion" placeholder="Your Name" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="heroStatusInput" class="studio-label">Status Pill</label>
+          <div class="studio-input-box">
+            <input id="heroStatusInput" type="text" class="studio-text-input studio-field-md" value="Building clean developer tools" placeholder="Available for projects" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="heroTaglineInput" class="studio-label">Bio / Role Tagline</label>
+          <div class="studio-input-box">
+            <input id="heroTaglineInput" type="text" class="studio-text-input studio-field-wide" value="Designing fast software, automations, and expressive interfaces." placeholder="Short role or bio headline" spellcheck="false">
+          </div>
+        </div>
+      </div>
+
+      <div id="tabStackControls" class="studio-controls-bar" hidden>
+        <div class="studio-input-wrap">
+          <label for="stackTitleInput" class="studio-label">Section Title</label>
+          <div class="studio-input-box">
+            <input id="stackTitleInput" type="text" class="studio-text-input studio-field-md" value="Tools &amp; Stack" placeholder="Tools &amp; Stack" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap">
+          <label for="stackSubtitleInput" class="studio-label">Subtitle</label>
+          <div class="studio-input-box">
+            <input id="stackSubtitleInput" type="text" class="studio-text-input studio-field-md" value="What I build with daily" placeholder="What I build with" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="studio-input-wrap studio-field-full">
+          <label for="stackItemsInput" class="studio-label">Technologies (comma-separated)</label>
+          <div class="studio-input-box">
+            <input id="stackItemsInput" type="text" class="studio-text-input studio-field-wide" value="Python, TypeScript, React, Next.js, Node.js, Tailwind CSS, PostgreSQL, Docker, Linux, Git" placeholder="Python, TypeScript, React..." spellcheck="false">
+          </div>
+        </div>
+      </div>
+
       <div class="studio-preview-section">
         <div class="studio-preview-header">
-          <span class="preview-tag">Animated Card Preview</span>
+          <span id="studioPreviewTag" class="preview-tag">Animated Heatmap Preview</span>
           <div class="preview-actions">
-            <button id="downloadDarkSvgBtn" class="studio-action-btn" type="button" title="Download animated dark SVG">
+            <button id="downloadDarkSvgBtn" class="studio-action-btn" type="button" title="Download dark SVG">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -560,7 +616,7 @@
               </svg>
               <span>Dark SVG</span>
             </button>
-            <button id="downloadLightSvgBtn" class="studio-action-btn" type="button" title="Download animated light SVG">
+            <button id="downloadLightSvgBtn" class="studio-action-btn" type="button" title="Download light SVG">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -585,9 +641,14 @@
 
       <div class="studio-code-panels">
         <div class="studio-code-item">
-          <div class="code-panel-heading">
-            <span class="code-panel-title">1. Embed snippet for your <code>README.md</code></span>
-            <span class="code-panel-desc">Automatically adapts to GitHub Dark &amp; Light mode and links to the repository</span>
+          <div class="code-panel-heading-row">
+            <div class="code-panel-heading">
+              <span id="snippetPanelTitle" class="code-panel-title">1. Embed snippet for your <code>README.md</code></span>
+              <span id="snippetPanelDesc" class="code-panel-desc">Automatically adapts to GitHub Dark &amp; Light mode</span>
+            </div>
+            <button id="copyFullReadmeBtn" class="studio-action-btn studio-copy-full-btn" type="button" title="Copy full 3-card README.md template">
+              <span>Copy Full 3-Card README.md</span>
+            </button>
           </div>
           <div class="code-terminal-block">
             <pre><code id="readmeSnippetOutput"></code></pre>
@@ -613,8 +674,8 @@
         </div>
 
         <div id="staticNotePanel" class="studio-static-note" hidden>
-          <strong>Static Setup (Zero Actions):</strong>
-          Click <em>Dark SVG</em> and <em>Light SVG</em> above to download both animated files, then commit them into an <code>assets/</code> folder inside your <code>username/username</code> repository so the embed above loads without 404.
+          <strong>Static Setup (Zero Sync Needed):</strong>
+          Click <em>Dark SVG</em> and <em>Light SVG</em> above to download both files, then commit them into an <code>assets/</code> folder inside your <code>username/username</code> repository. No GitHub Actions or cron job required.
         </div>
       </div>
     </div>

@@ -1157,6 +1157,88 @@ pre::-webkit-scrollbar-thumb:hover,
   margin-bottom: 18px;
 }
 
+.studio-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.studio-fetch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-fetch-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background-color: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.studio-fetch-btn:hover {
+  opacity: 0.9;
+}
+
+.studio-fetch-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.studio-fetch-status {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.studio-field-md {
+  width: 210px;
+}
+
+.studio-field-full {
+  flex: 1 1 100%;
+}
+
+.studio-field-wide {
+  width: 100%;
+}
+
+.studio-controls-bar[hidden] {
+  display: none !important;
+}
+
+.code-panel-heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.studio-copy-full-btn {
+  background-color: var(--accent-container);
+  color: var(--on-accent-container);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.studio-copy-full-btn:hover {
+  opacity: 0.9;
+  background-color: var(--accent-container);
+  color: var(--on-accent-container);
+}
+
 .studio-static-note {
   background-color: var(--bg-container);
   border: 1px solid var(--border);

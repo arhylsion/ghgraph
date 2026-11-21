@@ -428,12 +428,28 @@
   const profileStudioModal = document.getElementById('profileStudioModal');
   const openStudioBtn = document.getElementById('openStudioBtn');
   const closeStudioBtn = document.getElementById('closeStudioBtn');
-  const studioUsername = document.getElementById('studioUsername');
+  const studioCardTabs = document.getElementById('studioCardTabs');
   const studioThemePills = document.getElementById('studioThemePills');
+  const tabHeatmapControls = document.getElementById('tabHeatmapControls');
+  const tabHeroControls = document.getElementById('tabHeroControls');
+  const tabStackControls = document.getElementById('tabStackControls');
+  const studioUsername = document.getElementById('studioUsername');
+  const fetchContribBtn = document.getElementById('fetchContribBtn');
+  const usePaintedBtn = document.getElementById('usePaintedBtn');
+  const fetchStatusText = document.getElementById('fetchStatusText');
   const studioAnimPills = document.getElementById('studioAnimPills');
   const studioModePills = document.getElementById('studioModePills');
   const studioStatsToggle = document.getElementById('studioStatsToggle');
+  const heroNameInput = document.getElementById('heroNameInput');
+  const heroStatusInput = document.getElementById('heroStatusInput');
+  const heroTaglineInput = document.getElementById('heroTaglineInput');
+  const stackTitleInput = document.getElementById('stackTitleInput');
+  const stackSubtitleInput = document.getElementById('stackSubtitleInput');
+  const stackItemsInput = document.getElementById('stackItemsInput');
+  const studioPreviewTag = document.getElementById('studioPreviewTag');
   const studioSvgPreview = document.getElementById('studioSvgPreview');
+  const snippetPanelTitle = document.getElementById('snippetPanelTitle');
+  const snippetPanelDesc = document.getElementById('snippetPanelDesc');
   const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
   const workflowYamlOutput = document.getElementById('workflowYamlOutput');
   const workflowPanel = document.getElementById('workflowPanel');
@@ -441,11 +457,16 @@
   const downloadDarkSvgBtn = document.getElementById('downloadDarkSvgBtn');
   const downloadLightSvgBtn = document.getElementById('downloadLightSvgBtn');
   const copySvgRawBtn = document.getElementById('copySvgRawBtn');
+  const copyFullReadmeBtn = document.getElementById('copyFullReadmeBtn');
 
   const FIXED_SITE_URL = 'https://arhylsion.github.io/ghgraph/';
+  const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  let currentStudioTab = 'heatmap';
   let currentStudioTheme = 'dark';
   let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
+  let fetchedState = null;
 
   function escapeXml(str) {
     return String(str)
@@ -456,29 +477,41 @@
       .replace(/'/g, '&#39;');
   }
 
+  function getThemePalette(theme) {
+    const isDark = theme === 'dark';
+    return {
+      isDark,
+      bg: isDark ? '#1a181c' : '#ffffff',
+      surfaceAlt: isDark ? '#211e23' : '#f5eff7',
+      border: isDark ? 'rgba(206, 196, 207, 0.12)' : 'rgba(78, 68, 82, 0.14)',
+      borderSubtle: isDark ? 'rgba(206, 196, 207, 0.08)' : 'rgba(78, 68, 82, 0.10)',
+      text: isDark ? '#ebe4eb' : '#1d1a20',
+      textMuted: isDark ? '#cec4cf' : '#4e4452',
+      textDim: isDark ? '#9a919c' : '#7d7281',
+      accent: isDark ? '#d9b9ff' : '#6e4d8e',
+      accentContainer: isDark ? '#533571' : '#efddff',
+      onAccentContainer: isDark ? '#efddff' : '#270747',
+      emptyBorder: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)',
+      pink: isDark ? '#fca5b9' : '#ec4899',
+      lilac: isDark ? '#d9b9ff' : '#8b5cf6',
+      mint: isDark ? '#8af2b3' : '#1d7e44',
+      cellColors: isDark
+        ? { 0: '#211e23', 1: '#1c382b', 2: '#2d6248', 3: '#50b57e', 4: '#8af2b3' }
+        : { 0: '#ede7f0', 1: '#a8e6be', 2: '#60ce8a', 3: '#37ad66', 4: '#1d7e44' }
+    };
+  }
+
   function buildProfileCardSvg(username, theme, showStats, anim) {
     const cleanUser = escapeXml((username || '').trim() || 'username');
-    const isDark = theme === 'dark';
+    const p = getThemePalette(theme);
     const animMode = anim || 'ripple';
     const h = showStats ? 218 : 212;
 
-    const bg = isDark ? '#1a181c' : '#ffffff';
-    const border = isDark ? 'rgba(206, 196, 207, 0.12)' : 'rgba(78, 68, 82, 0.14)';
-    const text = isDark ? '#ebe4eb' : '#1d1a20';
-    const textDim = isDark ? '#9a919c' : '#7d7281';
-    const accent = isDark ? '#d9b9ff' : '#6e4d8e';
-    const accentContainer = isDark ? '#533571' : '#efddff';
-    const onAccentContainer = isDark ? '#efddff' : '#270747';
-    const emptyBorder = isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)';
-    const ripplePink = isDark ? '#fca5b9' : '#ec4899';
-    const rippleLilac = isDark ? '#d9b9ff' : '#8b5cf6';
+    const useFetched = fetchedState && fetchedState.username.toLowerCase() === ((username || '').trim() || '').toLowerCase();
+    const activeGrid = useFetched ? fetchedState.grid : grid;
 
-    const cellColors = isDark
-      ? { 0: '#211e23', 1: '#1c382b', 2: '#2d6248', 3: '#50b57e', 4: '#8af2b3' }
-      : { 0: '#ede7f0', 1: '#a8e6be', 2: '#60ce8a', 3: '#37ad66', 4: '#1d7e44' };
-
-    let totalCommits = 0;
-    let activeDays = 0;
+    let totalCommits = useFetched ? fetchedState.totalCommits : 0;
+    let activeDays = useFetched ? fetchedState.activeDays : 0;
     let cellsSvg = '';
 
     const startX = 56;
@@ -488,15 +521,15 @@
 
     for (let c = 0; c < WEEKS; c++) {
       for (let r = 0; r < DAYS; r++) {
-        const lvl = grid[c][r];
-        if (lvl > 0) {
+        const lvl = activeGrid[c][r];
+        if (!useFetched && lvl > 0) {
           totalCommits += LEVEL_COMMITS[lvl];
           activeDays++;
         }
         const x = (startX + c * step).toFixed(1);
         const y = (startY + r * step).toFixed(1);
-        const color = cellColors[lvl];
-        const strokeAttr = lvl === 0 ? `stroke="${emptyBorder}" stroke-width="0.5"` : 'stroke="none"';
+        const color = p.cellColors[lvl] || p.cellColors[0];
+        const strokeAttr = lvl === 0 ? `stroke="${p.emptyBorder}" stroke-width="0.5"` : 'stroke="none"';
 
         const enterDelay = ((c + r) * 0.014).toFixed(3);
         let cls = 'gh-c';
@@ -527,7 +560,7 @@
       }
     }
 
-    const monthCols = [
+    const monthCols = useFetched ? fetchedState.monthCols : [
       { name: 'Jan', col: 1 }, { name: 'Feb', col: 5 }, { name: 'Mar', col: 9 },
       { name: 'Apr', col: 14 }, { name: 'May', col: 18 }, { name: 'Jun', col: 22 },
       { name: 'Jul', col: 27 }, { name: 'Aug', col: 31 }, { name: 'Sep', col: 35 },
@@ -537,7 +570,7 @@
     let monthsSvg = '';
     monthCols.forEach(m => {
       const x = (startX + m.col * step).toFixed(1);
-      monthsSvg += `<text x="${x}" y="64" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
+      monthsSvg += `<text x="${x}" y="64" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${p.textDim}">${m.name}</text>`;
     });
 
     const weekdays = [
@@ -549,24 +582,24 @@
     let weekdaysSvg = '';
     weekdays.forEach(w => {
       const y = (startY + w.row * step + 9).toFixed(1);
-      weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${w.name}</text>`;
+      weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${p.textDim}">${w.name}</text>`;
     });
 
     const legendY = showStats ? 200 : 196;
     const statsSvg = showStats
-      ? `<text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${accent}">${totalCommits} contributions · ${activeDays} active days</text>`
+      ? `<text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${p.accent}">${totalCommits} contributions · ${activeDays} active days</text>`
       : '';
 
     const footerSvg = `
   <g transform="translate(0, ${legendY})">
     ${statsSvg}
-    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">Less</text>
-    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${emptyBorder}" stroke-width="0.5"/>
-    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="none"/>
-    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="none"/>
-    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="none"/>
-    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="none"/>
-    <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">More</text>
+    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${p.textDim}">Less</text>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${p.cellColors[0]}" stroke="${p.emptyBorder}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${p.cellColors[1]}" stroke="none"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${p.cellColors[2]}" stroke="none"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${p.cellColors[3]}" stroke="none"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${p.cellColors[4]}" stroke="none"/>
+    <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${p.textDim}">More</text>
   </g>`;
 
     const auroraDefs = animMode === 'aurora' ? `  <defs>
@@ -575,19 +608,19 @@
   </defs>` : '';
 
     const auroraBg = animMode === 'aurora' ? `  <g clip-path="url(#gh-card-clip)" filter="url(#gh-blur)">
-    <ellipse class="gh-orb-1" cx="220" cy="110" rx="180" ry="70" fill="${rippleLilac}" opacity="${isDark ? '0.18' : '0.20'}"/>
-    <ellipse class="gh-orb-2" cx="610" cy="120" rx="170" ry="65" fill="${ripplePink}" opacity="${isDark ? '0.16' : '0.18'}"/>
+    <ellipse class="gh-orb-1" cx="220" cy="110" rx="180" ry="70" fill="${p.lilac}" opacity="${p.isDark ? '0.18' : '0.20'}"/>
+    <ellipse class="gh-orb-2" cx="610" cy="120" rx="170" ry="65" fill="${p.pink}" opacity="${p.isDark ? '0.16' : '0.18'}"/>
   </g>` : '';
 
     let animCss = '';
     if (animMode === 'ripple') {
       animCss = `    .gh-ca-pink { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRipplePink 6s ease-in-out infinite; }
     .gh-ca-lilac { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRippleLilac 6s ease-in-out infinite; }
-    @keyframes ghRipplePink { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${ripplePink}; } }
-    @keyframes ghRippleLilac { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${rippleLilac}; } }`;
+    @keyframes ghRipplePink { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${p.pink}; } }
+    @keyframes ghRippleLilac { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${p.lilac}; } }`;
     } else if (animMode === 'rain') {
       animCss = `    .gh-ca-rain { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRain 4.8s ease-in-out infinite; }
-    @keyframes ghRain { 0%, 72%, 100% { filter: brightness(1); transform: scale(1); } 80% { filter: brightness(1.55); transform: scale(1.15); fill: ${ripplePink}; } 88% { filter: brightness(1.15); transform: scale(1); } }`;
+    @keyframes ghRain { 0%, 72%, 100% { filter: brightness(1); transform: scale(1); } 80% { filter: brightness(1.55); transform: scale(1.15); fill: ${p.pink}; } 88% { filter: brightness(1.15); transform: scale(1); } }`;
     } else if (animMode === 'aurora') {
       animCss = `    .gh-ca-aurora { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghBreathe 5s ease-in-out infinite; }
     .gh-orb-1 { animation: ghDrift1 11s ease-in-out infinite alternate; }
@@ -597,7 +630,7 @@
     @keyframes ghDrift2 { from { transform: translate(45px, 20px); } to { transform: translate(-110px, -22px); } }`;
     } else {
       animCss = `    .gh-ca-rhythm { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRhythm 3.6s ease-in-out infinite; }
-    @keyframes ghRhythm { 0%, 68%, 100% { transform: scale(1); filter: brightness(1); } 78% { transform: scale(1.22); filter: brightness(1.4); fill: ${rippleLilac}; } 88% { transform: scale(0.96); } }`;
+    @keyframes ghRhythm { 0%, 68%, 100% { transform: scale(1); filter: brightness(1); } 78% { transform: scale(1.22); filter: brightness(1.4); fill: ${p.lilac}; } 88% { transform: scale(0.96); } }`;
     }
 
     const styleBlock = `  <style>
@@ -611,13 +644,13 @@ ${animCss}
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
 ${auroraDefs}
 ${styleBlock}
-  <rect width="820" height="${h}" rx="14" fill="${bg}" stroke="${border}" stroke-width="1"/>
+  <rect width="820" height="${h}" rx="14" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
 ${auroraBg}
-  <text x="28" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
+  <text x="28" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="${p.text}">@${cleanUser}</text>
   <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
     <g transform="translate(716, 16)">
-      <rect width="76" height="24" rx="12" fill="${accentContainer}"/>
-      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
+      <rect width="76" height="24" rx="12" fill="${p.accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${p.onAccentContainer}">ghgraph</text>
     </g>
   </a>
   ${monthsSvg}
@@ -627,22 +660,195 @@ ${auroraBg}
 </svg>`;
   }
 
+  function buildHeroBannerSvg(name, tagline, status, username, theme) {
+    const p = getThemePalette(theme);
+    const cleanName = escapeXml((name || '').trim() || 'Developer');
+    const cleanTagline = escapeXml((tagline || '').trim() || 'Designing clean tools & expressive interfaces.');
+    const cleanStatus = escapeXml((status || '').trim() || 'Building something new');
+    const cleanUser = escapeXml((username || '').trim() || 'username');
+    const statusWidth = Math.min(340, Math.max(110, cleanStatus.length * 6.8 + 38));
+    const h = 210;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+  <defs>
+    <clipPath id="gh-hero-clip"><rect width="820" height="${h}" rx="16"/></clipPath>
+    <filter id="gh-hero-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="46"/></filter>
+  </defs>
+  <style>
+    .gh-badge-link { cursor: pointer; text-decoration: none; }
+    .gh-badge-link:hover rect { opacity: 0.85; }
+    .gh-orb-a { animation: ghHeroDriftA 11s ease-in-out infinite alternate; }
+    .gh-orb-b { animation: ghHeroDriftB 14s ease-in-out infinite alternate; }
+    .gh-pulse-dot { animation: ghDotPulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .gh-fade-up { opacity: 0; animation: ghHeroIn 0.55s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    @keyframes ghHeroDriftA { from { transform: translate(-30px, -16px); } to { transform: translate(90px, 24px); } }
+    @keyframes ghHeroDriftB { from { transform: translate(35px, 18px); } to { transform: translate(-80px, -20px); } }
+    @keyframes ghDotPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.35); } }
+    @keyframes ghHeroIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+  <rect width="820" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <g clip-path="url(#gh-hero-clip)" filter="url(#gh-hero-blur)">
+    <ellipse class="gh-orb-a" cx="620" cy="48" rx="190" ry="80" fill="${p.lilac}" opacity="${p.isDark ? '0.20' : '0.24'}"/>
+    <ellipse class="gh-orb-b" cx="190" cy="185" rx="170" ry="65" fill="${p.pink}" opacity="${p.isDark ? '0.16' : '0.18'}"/>
+  </g>
+  <g transform="translate(32, 26)">
+    <rect width="${statusWidth.toFixed(0)}" height="26" rx="13" fill="${p.surfaceAlt}" stroke="${p.borderSubtle}" stroke-width="1"/>
+    <circle class="gh-pulse-dot" cx="15" cy="13" r="4" fill="${p.mint}"/>
+    <text x="27" y="17" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="500" fill="${p.textMuted}">${cleanStatus}</text>
+  </g>
+  <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(712, 26)">
+      <rect width="76" height="24" rx="12" fill="${p.accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${p.onAccentContainer}">ghgraph</text>
+    </g>
+  </a>
+  <text class="gh-fade-up" x="32" y="112" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="700" letter-spacing="-0.03em" fill="${p.text}" style="animation-delay:0.06s;">${cleanName}</text>
+  <text class="gh-fade-up" x="32" y="144" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15.5" font-weight="400" fill="${p.textMuted}" style="animation-delay:0.14s;">${cleanTagline}</text>
+  <text class="gh-fade-up" x="32" y="180" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="500" fill="${p.accent}" style="animation-delay:0.22s;">github.com/${cleanUser}</text>
+</svg>`;
+  }
+
+  function buildTechStackSvg(title, subtitle, itemsCsv, theme) {
+    const p = getThemePalette(theme);
+    const cleanTitle = escapeXml((title || '').trim() || 'Tools & Stack');
+    const cleanSub = escapeXml((subtitle || '').trim() || 'What I build with daily');
+    const rawItems = (itemsCsv || '').split(',').map(s => s.trim()).filter(Boolean);
+    const items = rawItems.length ? rawItems : ['Python', 'TypeScript', 'React', 'Node.js', 'Docker'];
+    const dotPalette = [p.mint, p.lilac, p.pink];
+
+    const padX = 32;
+    const maxW = 820 - padX;
+    const pillH = 30;
+    const gapX = 10;
+    const gapY = 10;
+    let curX = padX;
+    let curY = 84;
+    let pillsSvg = '';
+
+    items.forEach((item, idx) => {
+      const label = escapeXml(item);
+      const pillW = Math.max(66, Math.round(item.length * 7.4 + 36));
+      if (curX + pillW > maxW && curX > padX) {
+        curX = padX;
+        curY += pillH + gapY;
+      }
+      const dotColor = dotPalette[idx % dotPalette.length];
+      const delay = (0.04 * idx).toFixed(2);
+      pillsSvg += `<g class="gh-pill-in" transform="translate(${curX}, ${curY})" style="animation-delay:${delay}s;">
+    <rect width="${pillW}" height="${pillH}" rx="15" fill="${p.surfaceAlt}" stroke="${p.borderSubtle}" stroke-width="1"/>
+    <circle cx="15" cy="15" r="3.5" fill="${dotColor}"/>
+    <text x="26" y="19" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" font-weight="500" fill="${p.text}">${label}</text>
+  </g>`;
+      curX += pillW + gapX;
+    });
+
+    const h = curY + pillH + 30;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+  <style>
+    .gh-badge-link { cursor: pointer; text-decoration: none; }
+    .gh-badge-link:hover rect { opacity: 0.85; }
+    .gh-pill-in { opacity: 0; animation: ghPillFade 0.4s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    @keyframes ghPillFade { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+  <rect width="820" height="${h}" rx="16" fill="${p.bg}" stroke="${p.border}" stroke-width="1"/>
+  <text x="32" y="38" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" font-weight="600" fill="${p.text}">${cleanTitle}</text>
+  <text x="32" y="58" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" font-weight="400" fill="${p.textDim}">${cleanSub}</text>
+  <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(712, 22)">
+      <rect width="76" height="24" rx="12" fill="${p.accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${p.onAccentContainer}">ghgraph</text>
+    </g>
+  </a>
+  ${pillsSvg}
+</svg>`;
+  }
+
+  function getActiveCardSvg(themeOverride) {
+    const theme = themeOverride || currentStudioTheme;
+    const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
+    if (currentStudioTab === 'hero') {
+      return buildHeroBannerSvg(
+        heroNameInput ? heroNameInput.value : 'Arhylsion',
+        heroTaglineInput ? heroTaglineInput.value : '',
+        heroStatusInput ? heroStatusInput.value : '',
+        username,
+        theme
+      );
+    }
+    if (currentStudioTab === 'stack') {
+      return buildTechStackSvg(
+        stackTitleInput ? stackTitleInput.value : 'Tools & Stack',
+        stackSubtitleInput ? stackSubtitleInput.value : '',
+        stackItemsInput ? stackItemsInput.value : '',
+        theme
+      );
+    }
+    const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
+    return buildProfileCardSvg(username, theme, showStats, currentStudioAnim);
+  }
+
+  function getActiveAssetPrefix() {
+    if (currentStudioTab === 'hero') return 'ghgraph-hero';
+    if (currentStudioTab === 'stack') return 'ghgraph-stack';
+    return 'ghgraph';
+  }
+
+  function buildPictureSnippet(user, prefix, altText) {
+    const u = (user || '').trim() || 'username';
+    return `<a href="${FIXED_SITE_URL}">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-light.svg">
+    <img alt="${altText}" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/${prefix}-dark.svg" width="100%">
+  </picture>
+</a>`;
+  }
+
+  function buildFullReadmeMarkdown() {
+    const u = ((studioUsername ? studioUsername.value : '') || 'username').trim() || 'username';
+    const heroBlock = buildPictureSnippet(u, 'ghgraph-hero', `${u} — Profile Hero`);
+    const heatmapBlock = buildPictureSnippet(u, 'ghgraph', `${u}'s Contribution Heatmap`);
+    const stackBlock = buildPictureSnippet(u, 'ghgraph-stack', `${u}'s Tech Stack`);
+    return `${heroBlock}\n\n<br>\n\n${heatmapBlock}\n\n<br>\n\n${stackBlock}\n`;
+  }
+
   function updateStudioPreview() {
     if (!studioSvgPreview) return;
     const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
     const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-    const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats, currentStudioAnim);
+    const svgCode = getActiveCardSvg(currentStudioTheme);
     studioSvgPreview.innerHTML = svgCode;
+
+    if (studioPreviewTag) {
+      if (currentStudioTab === 'hero') {
+        studioPreviewTag.textContent = 'Hero Banner Preview (Static)';
+      } else if (currentStudioTab === 'stack') {
+        studioPreviewTag.textContent = 'Tech Stack Preview (Static)';
+      } else {
+        studioPreviewTag.textContent = 'Animated Heatmap Preview';
+      }
+    }
 
     if (readmeSnippetOutput) {
       const u = username.trim() || 'username';
-      readmeSnippetOutput.textContent = `<a href="${FIXED_SITE_URL}">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-light.svg">
-    <img alt="${u}'s Contribution Heatmap" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
-  </picture>
-</a>`;
+      const prefix = getActiveAssetPrefix();
+      const alt = currentStudioTab === 'hero'
+        ? `${u} — Profile Hero`
+        : currentStudioTab === 'stack'
+          ? `${u}'s Tech Stack`
+          : `${u}'s Contribution Heatmap`;
+      readmeSnippetOutput.textContent = buildPictureSnippet(u, prefix, alt);
+    }
+
+    if (workflowPanel && staticNotePanel) {
+      if (currentStudioTab === 'heatmap' && currentStudioMode === 'action') {
+        workflowPanel.style.display = 'block';
+        staticNotePanel.setAttribute('hidden', '');
+      } else {
+        workflowPanel.style.display = 'none';
+        staticNotePanel.removeAttribute('hidden');
+      }
     }
 
     if (workflowYamlOutput) {
@@ -680,15 +886,104 @@ jobs:
     }
   }
 
+  async function fetchUserContributions() {
+    if (!studioUsername || !fetchContribBtn) return;
+    const rawUser = studioUsername.value.trim();
+    if (!rawUser) return;
+
+    fetchContribBtn.disabled = true;
+    fetchContribBtn.textContent = 'Fetching...';
+    if (fetchStatusText) fetchStatusText.textContent = `Fetching @${rawUser} public calendar...`;
+
+    try {
+      const resp = await fetch(`https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(rawUser)}?y=last`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const contribs = Array.isArray(data.contributions) ? data.contributions : [];
+      if (!contribs.length) throw new Error('No public contributions returned');
+
+      const mapByDate = new Map();
+      contribs.forEach(item => {
+        mapByDate.set(item.date, {
+          count: Number(item.count) || 0,
+          level: Math.min(4, Math.max(0, Number(item.level) || 0))
+        });
+      });
+
+      const lastDateStr = contribs[contribs.length - 1].date;
+      const lastDate = new Date(`${lastDateStr}T00:00:00Z`);
+      const lastDow = lastDate.getUTCDay();
+      const lastSunday = new Date(lastDate);
+      lastSunday.setUTCDate(lastSunday.getUTCDate() - lastDow);
+      const startSunday = new Date(lastSunday);
+      startSunday.setUTCDate(startSunday.getUTCDate() - 7 * 51);
+
+      const newGrid = Array.from({ length: WEEKS }, () => new Array(DAYS).fill(0));
+      const monthCols = [];
+      const seenMonths = new Set();
+      let totalCommits = 0;
+      let activeDays = 0;
+
+      for (let c = 0; c < WEEKS; c++) {
+        for (let r = 0; r < DAYS; r++) {
+          const d = new Date(startSunday);
+          d.setUTCDate(d.getUTCDate() + c * 7 + r);
+          const iso = d.toISOString().slice(0, 10);
+          const entry = mapByDate.get(iso);
+          if (entry) {
+            newGrid[c][r] = entry.level;
+            if (entry.count > 0) {
+              totalCommits += entry.count;
+              activeDays++;
+            }
+          }
+          if (r === 0) {
+            const mKey = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+            if (!seenMonths.has(mKey)) {
+              seenMonths.add(mKey);
+              if (!monthCols.length || c - monthCols[monthCols.length - 1].col >= 3) {
+                monthCols.push({ name: MONTH_SHORT[d.getUTCMonth()], col: c });
+              }
+            }
+          }
+        }
+      }
+
+      if (data.total && typeof data.total.lastYear === 'number') {
+        totalCommits = data.total.lastYear;
+      }
+
+      fetchedState = {
+        username: rawUser,
+        grid: newGrid,
+        monthCols,
+        totalCommits,
+        activeDays
+      };
+
+      if (usePaintedBtn) usePaintedBtn.removeAttribute('hidden');
+      if (fetchStatusText) {
+        fetchStatusText.textContent = `Loaded @${rawUser}: ${totalCommits} contributions · ${activeDays} active days`;
+      }
+      updateStudioPreview();
+    } catch {
+      if (fetchStatusText) {
+        fetchStatusText.textContent = `Could not fetch @${rawUser} — showing painted canvas`;
+      }
+    } finally {
+      fetchContribBtn.disabled = false;
+      fetchContribBtn.textContent = 'Fetch';
+    }
+  }
+
   function triggerSvgDownload(theme) {
-    const username = (studioUsername ? studioUsername.value : '') || 'username';
-    const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-    const svgCode = buildProfileCardSvg(username, theme, showStats, currentStudioAnim);
+    const svgCode = getActiveCardSvg(theme);
+    const prefix = getActiveAssetPrefix();
     const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ghgraph-${theme}.svg`;
+    a.download = `${prefix}-${theme}.svg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -724,11 +1019,53 @@ jobs:
       }
     });
 
+    if (studioCardTabs) {
+      const tabs = studioCardTabs.querySelectorAll('.studio-pill');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          currentStudioTab = tab.dataset.tab;
+          if (tabHeatmapControls) tabHeatmapControls.toggleAttribute('hidden', currentStudioTab !== 'heatmap');
+          if (tabHeroControls) tabHeroControls.toggleAttribute('hidden', currentStudioTab !== 'hero');
+          if (tabStackControls) tabStackControls.toggleAttribute('hidden', currentStudioTab !== 'stack');
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (fetchContribBtn) {
+      fetchContribBtn.addEventListener('click', fetchUserContributions);
+    }
+
+    if (usePaintedBtn) {
+      usePaintedBtn.addEventListener('click', () => {
+        fetchedState = null;
+        usePaintedBtn.setAttribute('hidden', '');
+        if (fetchStatusText) fetchStatusText.textContent = 'Using painted canvas';
+        updateStudioPreview();
+      });
+    }
+
     if (studioUsername) {
       studioUsername.addEventListener('input', () => {
         updateStudioPreview();
       });
+      studioUsername.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          fetchUserContributions();
+        }
+      });
     }
+
+    [heroNameInput, heroStatusInput, heroTaglineInput, stackTitleInput, stackSubtitleInput, stackItemsInput].forEach(el => {
+      if (el) el.addEventListener('input', updateStudioPreview);
+    });
 
     if (studioStatsToggle) {
       studioStatsToggle.addEventListener('change', () => {
@@ -779,16 +1116,7 @@ jobs:
           pill.classList.add('active');
           pill.setAttribute('aria-selected', 'true');
           currentStudioMode = pill.dataset.mode;
-          if (workflowPanel) {
-            workflowPanel.style.display = currentStudioMode === 'action' ? 'block' : 'none';
-          }
-          if (staticNotePanel) {
-            if (currentStudioMode === 'static') {
-              staticNotePanel.removeAttribute('hidden');
-            } else {
-              staticNotePanel.setAttribute('hidden', '');
-            }
-          }
+          updateStudioPreview();
         });
       });
     }
@@ -803,14 +1131,28 @@ jobs:
 
     if (copySvgRawBtn) {
       copySvgRawBtn.addEventListener('click', () => {
-        const username = (studioUsername ? studioUsername.value : '') || 'username';
-        const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats, currentStudioAnim);
+        const svgCode = getActiveCardSvg(currentStudioTheme);
         navigator.clipboard.writeText(svgCode).then(() => {
           const btnSpan = copySvgRawBtn.querySelector('span');
           if (btnSpan) {
             const old = btnSpan.textContent;
             btnSpan.textContent = 'Copied!';
+            setTimeout(() => {
+              btnSpan.textContent = old;
+            }, 1800);
+          }
+        });
+      });
+    }
+
+    if (copyFullReadmeBtn) {
+      copyFullReadmeBtn.addEventListener('click', () => {
+        const md = buildFullReadmeMarkdown();
+        navigator.clipboard.writeText(md).then(() => {
+          const btnSpan = copyFullReadmeBtn.querySelector('span');
+          if (btnSpan) {
+            const old = btnSpan.textContent;
+            btnSpan.textContent = 'Copied Full README.md!';
             setTimeout(() => {
               btnSpan.textContent = old;
             }, 1800);
