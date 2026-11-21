@@ -25,6 +25,7 @@
         <div class="nav-links">
           <a href="#quickstart" class="nav-item">Quickstart</a>
           <a href="#examples" class="nav-item">Examples</a>
+          <a href="#profile-readme" class="nav-item">Profile README</a>
           <a href="#reference" class="nav-item">Options</a>
           <a href="#troubleshooting" class="nav-item">Rules</a>
           <button id="openTosBtn" class="nav-item tos-nav-btn" type="button">Disclaimer</button>
@@ -274,6 +275,142 @@
         <p>
           If your busiest day has only 1 commit, all active days will render in the lightest shade. To ensure visual contrast for text banners and pixel patterns, use <code>--scale 2.0</code> to raise the upper commit counts.
         </p>
+      </section>
+
+      <section id="profile-readme" class="prose-section">
+        <div class="studio-header">
+          <span class="studio-badge">Special Repository</span>
+          <h2>Profile README Studio</h2>
+          <p>Generate a customized, responsive SVG contribution heatmap card for your special <code>username/username</code> profile repository. Automate it daily with GitHub Actions or copy the static SVG.</p>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-controls-bar">
+            <div class="studio-input-wrap">
+              <label for="studioUsername" class="studio-label">GitHub Username</label>
+              <div class="studio-input-box">
+                <span class="studio-at">@</span>
+                <input id="studioUsername" type="text" class="studio-text-input" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="studio-group">
+              <span class="studio-label">M3 Theme</span>
+              <div id="studioThemePills" class="studio-pills" role="tablist">
+                <button class="studio-pill active" data-theme="dark" type="button" role="tab" aria-selected="true">Dark M3 Pastel</button>
+                <button class="studio-pill" data-theme="light" type="button" role="tab" aria-selected="false">Light M3 Pastel</button>
+              </div>
+            </div>
+
+            <div class="studio-group">
+              <span class="studio-label">Delivery Mode</span>
+              <div id="studioModePills" class="studio-pills" role="tablist">
+                <button class="studio-pill active" data-mode="action" type="button" role="tab" aria-selected="true">GitHub Action (Auto-Refresh)</button>
+                <button class="studio-pill" data-mode="static" type="button" role="tab" aria-selected="false">Static SVG (Direct Embed)</button>
+              </div>
+            </div>
+
+            <div class="studio-group studio-toggle-group">
+              <label class="studio-checkbox-label">
+                <input id="studioStatsToggle" type="checkbox" checked class="studio-checkbox">
+                <span>Include stats bar</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="studio-preview-section">
+            <div class="studio-preview-header">
+              <span class="preview-tag">Card Preview</span>
+              <div class="preview-actions">
+                <button id="downloadSvgBtn" class="studio-action-btn" type="button" title="Download SVG file">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download SVG</span>
+                </button>
+                <button id="copySvgRawBtn" class="studio-action-btn" type="button" title="Copy raw SVG code">
+                  <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy SVG</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="studioSvgPreviewWrap" class="studio-svg-viewport">
+              <div id="studioSvgPreview" class="studio-svg-render"></div>
+            </div>
+          </div>
+
+          <div class="studio-code-panels">
+            <div class="studio-code-item">
+              <div class="code-panel-heading">
+                <span class="code-panel-title">1. Embed snippet for your <code>README.md</code></span>
+                <span class="code-panel-desc">Supports GitHub automatic Dark &amp; Light mode theme switching</span>
+              </div>
+              <div class="code-terminal-block">
+                <pre><code id="readmeSnippetOutput">&lt;picture&gt;
+  &lt;source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/arhylsion/arhylsion/main/assets/ghgraph-dark.svg"&gt;
+  &lt;source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/arhylsion/arhylsion/main/assets/ghgraph-light.svg"&gt;
+  &lt;img alt="GitHub Contribution Heatmap" src="https://raw.githubusercontent.com/arhylsion/arhylsion/main/assets/ghgraph-dark.svg"&gt;
+&lt;/picture&gt;</code></pre>
+                <button id="copyReadmeSnippetBtn" class="terminal-copy-btn" aria-label="Copy markdown snippet" title="Copy to clipboard">
+                  <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div id="workflowPanel" class="studio-code-item">
+              <div class="code-panel-heading">
+                <span class="code-panel-title">2. GitHub Actions Workflow (Save to <code>.github/workflows/ghgraph.yml</code>)</span>
+                <span class="code-panel-desc">Runs automatically daily at midnight UTC to keep your profile card synced</span>
+              </div>
+              <div class="code-terminal-block">
+                <pre><code id="workflowYamlOutput">name: Refresh Profile Heatmap
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-heatmap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate Heatmap SVG Card
+        run: |
+          mkdir -p assets
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+          python ghgraph.py --repo ${{ github.repository }} --year $(date +%Y) --dry-run
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/
+          git diff --staged --quiet || (git commit -m "chore: sync contribution heatmap card" && git push)</code></pre>
+                <button id="copyWorkflowBtn" class="terminal-copy-btn" aria-label="Copy workflow yaml" title="Copy to clipboard">
+                  <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="reference" class="prose-section">

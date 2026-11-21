@@ -232,6 +232,10 @@
       }
     }
 
+    if (typeof updateStudioPreview === 'function') {
+      updateStudioPreview();
+    }
+
     if (activeDays.length === 0) {
       commandOutput.textContent = 'python ghgraph.py --repo user/activity --year 2025 --dry-run';
       return;
@@ -421,6 +425,270 @@
     });
   }
 
+  const studioUsername = document.getElementById('studioUsername');
+  const studioThemePills = document.getElementById('studioThemePills');
+  const studioModePills = document.getElementById('studioModePills');
+  const studioStatsToggle = document.getElementById('studioStatsToggle');
+  const studioSvgPreview = document.getElementById('studioSvgPreview');
+  const readmeSnippetOutput = document.getElementById('readmeSnippetOutput');
+  const workflowYamlOutput = document.getElementById('workflowYamlOutput');
+  const workflowPanel = document.getElementById('workflowPanel');
+  const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+  const copySvgRawBtn = document.getElementById('copySvgRawBtn');
+
+  let currentStudioTheme = 'dark';
+  let currentStudioMode = 'action';
+
+  function buildProfileCardSvg(username, theme, showStats) {
+    const cleanUser = (username || '').trim() || 'username';
+    const isDark = theme === 'dark';
+    const h = showStats ? 204 : 166;
+
+    const bg = isDark ? '#1a181c' : '#ffffff';
+    const border = isDark ? 'rgba(206, 196, 207, 0.12)' : 'rgba(78, 68, 82, 0.14)';
+    const text = isDark ? '#ebe4eb' : '#1d1a20';
+    const textDim = isDark ? '#9a919c' : '#7d7281';
+    const accent = isDark ? '#d9b9ff' : '#6e4d8e';
+    const accentContainer = isDark ? '#533571' : '#efddff';
+    const onAccentContainer = isDark ? '#efddff' : '#270747';
+    const cellBorder = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+    const cellColors = isDark
+      ? { 0: '#211e23', 1: '#1c382b', 2: '#2d6248', 3: '#50b57e', 4: '#8af2b3' }
+      : { 0: '#ede7f0', 1: '#a8e6be', 2: '#60ce8a', 3: '#37ad66', 4: '#1d7e44' };
+
+    let totalCommits = 0;
+    let activeDays = 0;
+    let cellsSvg = '';
+
+    const startX = 56;
+    const startY = 66;
+    const step = 14.5;
+    const cellSize = 11;
+
+    for (let c = 0; c < WEEKS; c++) {
+      for (let r = 0; r < DAYS; r++) {
+        const lvl = grid[c][r];
+        if (lvl > 0) {
+          totalCommits += LEVEL_COMMITS[lvl];
+          activeDays++;
+        }
+        const x = (startX + c * step).toFixed(1);
+        const y = (startY + r * step).toFixed(1);
+        const color = cellColors[lvl];
+        cellsSvg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" fill="${color}" stroke="${cellBorder}" stroke-width="0.7"/>`;
+      }
+    }
+
+    const monthCols = [
+      { name: 'Jan', col: 1 }, { name: 'Feb', col: 5 }, { name: 'Mar', col: 9 },
+      { name: 'Apr', col: 14 }, { name: 'May', col: 18 }, { name: 'Jun', col: 22 },
+      { name: 'Jul', col: 27 }, { name: 'Aug', col: 31 }, { name: 'Sep', col: 35 },
+      { name: 'Oct', col: 40 }, { name: 'Nov', col: 44 }, { name: 'Dec', col: 49 }
+    ];
+
+    let monthsSvg = '';
+    monthCols.forEach(m => {
+      const x = (startX + m.col * step).toFixed(1);
+      monthsSvg += `<text x="${x}" y="50" font-family="'Outfit', -apple-system, sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
+    });
+
+    const weekdays = [
+      { name: 'Mon', row: 1 },
+      { name: 'Wed', row: 3 },
+      { name: 'Fri', row: 5 }
+    ];
+
+    let weekdaysSvg = '';
+    weekdays.forEach(w => {
+      const y = (startY + w.row * step + 9).toFixed(1);
+      weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, sans-serif" font-size="10" font-weight="500" fill="${textDim}">${w.name}</text>`;
+    });
+
+    let footerSvg = '';
+    if (showStats) {
+      footerSvg = `
+  <g transform="translate(0, 186)">
+    <text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${accent}">${totalCommits} contributions · ${activeDays} active days</text>
+    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">Less</text>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <text x="768" y="0" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">More</text>
+  </g>`;
+    } else {
+      footerSvg = `
+  <g transform="translate(0, 150)">
+    <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">Less</text>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <text x="768" y="0" font-family="'Outfit', -apple-system, sans-serif" font-size="11" fill="${textDim}">More</text>
+  </g>`;
+    }
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+  <rect width="820" height="${h}" rx="14" fill="${bg}" stroke="${border}" stroke-width="1"/>
+  <text x="28" y="32" font-family="'Outfit', -apple-system, sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
+  <g transform="translate(738, 16)">
+    <rect width="54" height="20" rx="10" fill="${accentContainer}"/>
+    <text x="27" y="14" text-anchor="middle" font-family="'Outfit', -apple-system, sans-serif" font-size="11" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
+  </g>
+  ${monthsSvg}
+  ${weekdaysSvg}
+  <g>${cellsSvg}</g>
+  ${footerSvg}
+</svg>`;
+  }
+
+  function updateStudioPreview() {
+    if (!studioSvgPreview) return;
+    const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
+    const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
+    const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
+    studioSvgPreview.innerHTML = svgCode;
+
+    if (readmeSnippetOutput) {
+      const u = username.trim() || 'username';
+      readmeSnippetOutput.textContent = `<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-light.svg">
+  <img alt="${u}'s Contribution Heatmap" src="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
+</picture>`;
+    }
+
+    if (workflowYamlOutput) {
+      const u = username.trim() || 'username';
+      workflowYamlOutput.textContent = `name: Refresh Profile Heatmap
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-heatmap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download ghgraph CLI
+        run: |
+          mkdir -p assets
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+
+      - name: Generate Heatmap Cards
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python ghgraph.py --repo \${{ github.repository }} --year $(date +%Y) --dry-run
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/
+          git diff --staged --quiet || (git commit -m "chore: sync profile contribution heatmap" && git push)`;
+    }
+  }
+
+  function initProfileStudio() {
+    if (studioUsername) {
+      studioUsername.addEventListener('input', () => {
+        updateStudioPreview();
+      });
+    }
+
+    if (studioStatsToggle) {
+      studioStatsToggle.addEventListener('change', () => {
+        updateStudioPreview();
+      });
+    }
+
+    if (studioThemePills) {
+      const pills = studioThemePills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentStudioTheme = pill.dataset.theme;
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (studioModePills) {
+      const pills = studioModePills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentStudioMode = pill.dataset.mode;
+          if (workflowPanel) {
+            workflowPanel.style.display = currentStudioMode === 'action' ? 'block' : 'none';
+          }
+        });
+      });
+    }
+
+    if (downloadSvgBtn) {
+      downloadSvgBtn.addEventListener('click', () => {
+        const username = (studioUsername ? studioUsername.value : '') || 'username';
+        const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
+        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
+        const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ghgraph-${currentStudioTheme}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (copySvgRawBtn) {
+      copySvgRawBtn.addEventListener('click', () => {
+        const username = (studioUsername ? studioUsername.value : '') || 'username';
+        const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
+        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
+        navigator.clipboard.writeText(svgCode).then(() => {
+          const btnSpan = copySvgRawBtn.querySelector('span');
+          if (btnSpan) {
+            const old = btnSpan.textContent;
+            btnSpan.textContent = 'Copied!';
+            setTimeout(() => {
+              btnSpan.textContent = old;
+            }, 1800);
+          }
+        });
+      });
+    }
+
+    updateStudioPreview();
+  }
+
   initTheme();
   SAMPLE_SEEDS.forEach(s => {
     if (s.col < WEEKS && s.row < DAYS) {
@@ -429,5 +697,6 @@
   });
   initGrid();
   updateCommand();
+  initProfileStudio();
   wireCopyButtons();
 })();
