@@ -1286,8 +1286,12 @@ pre::-webkit-scrollbar-thumb:hover,
 }
 
 .studio-toggle-group {
-  align-self: center;
-  margin-bottom: 6px;
+  align-self: flex-end;
+  height: 34px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 0;
 }
 
 .studio-checkbox-label {

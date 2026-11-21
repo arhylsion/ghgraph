@@ -815,6 +815,9 @@ def fetch_calendar_via_public_html(login: str) -> tuple[list[list[int]], list[tu
     return grid, month_labels, total_contributions, active_days
 
 
+FIXED_SITE_URL = "https://arhylsion.github.io/ghgraph/"
+
+
 def render_svg_card(
     username: str,
     grid: list[list[int]],
@@ -823,11 +826,13 @@ def render_svg_card(
     active_days: int,
     theme: str = "dark",
     show_stats: bool = True,
+    anim: str = "ripple",
 ) -> str:
     """Render an animated M3 Expressive pastel SVG contribution heatmap card."""
     clean_user = html.escape((username or "").strip() or "username")
     is_dark = theme == "dark"
-    h = 204 if show_stats else 166
+    anim_mode = anim or "ripple"
+    h = 218 if show_stats else 212
 
     bg = "#1a181c" if is_dark else "#ffffff"
     border = "rgba(206, 196, 207, 0.12)" if is_dark else "rgba(78, 68, 82, 0.14)"
@@ -836,7 +841,9 @@ def render_svg_card(
     accent = "#d9b9ff" if is_dark else "#6e4d8e"
     accent_container = "#533571" if is_dark else "#efddff"
     on_accent_container = "#efddff" if is_dark else "#270747"
-    cell_border = "rgba(255, 255, 255, 0.05)" if is_dark else "rgba(0, 0, 0, 0.05)"
+    empty_border = "rgba(255, 255, 255, 0.03)" if is_dark else "rgba(0, 0, 0, 0.04)"
+    ripple_pink = "#fca5b9" if is_dark else "#ec4899"
+    ripple_lilac = "#d9b9ff" if is_dark else "#8b5cf6"
 
     cell_colors = (
         {0: "#211e23", 1: "#1c382b", 2: "#2d6248", 3: "#50b57e", 4: "#8af2b3"}
@@ -845,35 +852,52 @@ def render_svg_card(
     )
 
     start_x = 56.0
-    start_y = 66.0
+    start_y = 78.0
     step = 14.5
     cell_size = 11
 
     cells_parts: list[str] = []
     for c in range(52):
-        fade_delay = f"{c * 0.018:.3f}s"
-        shimmer_delay = f"{1.2 + c * 0.055:.3f}s"
         for r in range(7):
             lvl = grid[c][r]
             x = f"{start_x + c * step:.1f}"
             y = f"{start_y + r * step:.1f}"
             color = cell_colors.get(lvl, cell_colors[0])
+            stroke_attr = f'stroke="{empty_border}" stroke-width="0.5"' if lvl == 0 else 'stroke="none"'
+
+            enter_delay = f"{(c + r) * 0.014:.3f}s"
+            cls = "gh-c"
+            delay_style = f"animation-delay:{enter_delay};"
+
             if lvl > 0:
-                cls = "cell-active"
-                delay_style = f"animation-delay:{fade_delay},{shimmer_delay};"
-            else:
-                cls = "cell"
-                delay_style = f"animation-delay:{fade_delay};"
+                if anim_mode == "ripple":
+                    cls = "gh-ca-pink" if c % 2 == 0 else "gh-ca-lilac"
+                    loop_delay = f"{1.0 + (c + r) * 0.055:.3f}s"
+                    delay_style = f"animation-delay:{enter_delay},{loop_delay};"
+                elif anim_mode == "rain":
+                    cls = "gh-ca-rain"
+                    col_phase = ((c * 13) % 17) * 0.28
+                    loop_delay = f"{0.8 + col_phase + r * 0.14:.3f}s"
+                    delay_style = f"animation-delay:{enter_delay},{loop_delay};"
+                elif anim_mode == "aurora":
+                    cls = "gh-ca-aurora"
+                    loop_delay = f"{0.8 + (c % 12) * 0.35 + r * 0.12:.3f}s"
+                    delay_style = f"animation-delay:{enter_delay},{loop_delay};"
+                else:
+                    cls = "gh-ca-rhythm"
+                    loop_delay = f"{0.8 + (6 - r) * 0.11 + (c % 8) * 0.22:.3f}s"
+                    delay_style = f"animation-delay:{enter_delay},{loop_delay};"
+
             cells_parts.append(
                 f'<rect class="{cls}" x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" '
-                f'rx="2.5" fill="{color}" stroke="{cell_border}" stroke-width="0.7" style="{delay_style}"/>'
+                f'rx="2.5" fill="{color}" {stroke_attr} style="{delay_style}"/>'
             )
 
     months_parts: list[str] = []
     for name, col in month_labels:
         x = f"{start_x + col * step:.1f}"
         months_parts.append(
-            f'<text x="{x}" y="52" font-family="\'Outfit\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif" '
+            f'<text x="{x}" y="64" font-family="\'Outfit\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif" '
             f'font-size="10" font-weight="500" fill="{text_dim}">{name}</text>'
         )
 
@@ -885,7 +909,7 @@ def render_svg_card(
             f'font-size="10" font-weight="500" fill="{text_dim}">{name}</text>'
         )
 
-    legend_y = 186 if show_stats else 150
+    legend_y = 200 if show_stats else 196
     stats_text = (
         f'<text x="28" y="0" font-family="\'JetBrains Mono\', monospace" font-size="11" font-weight="500" '
         f'fill="{accent}">{total_commits} contributions \u00b7 {active_days} active days</text>'
@@ -896,31 +920,75 @@ def render_svg_card(
     footer_svg = f"""  <g transform="translate(0, {legend_y})">
     {stats_text}
     <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="{text_dim}">Less</text>
-    <rect x="704" y="-9" width="9" height="9" rx="2" fill="{cell_colors[0]}" stroke="{cell_border}" stroke-width="0.5"/>
-    <rect x="716" y="-9" width="9" height="9" rx="2" fill="{cell_colors[1]}" stroke="{cell_border}" stroke-width="0.5"/>
-    <rect x="728" y="-9" width="9" height="9" rx="2" fill="{cell_colors[2]}" stroke="{cell_border}" stroke-width="0.5"/>
-    <rect x="740" y="-9" width="9" height="9" rx="2" fill="{cell_colors[3]}" stroke="{cell_border}" stroke-width="0.5"/>
-    <rect x="752" y="-9" width="9" height="9" rx="2" fill="{cell_colors[4]}" stroke="{cell_border}" stroke-width="0.5"/>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="{cell_colors[0]}" stroke="{empty_border}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="{cell_colors[1]}" stroke="none"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="{cell_colors[2]}" stroke="none"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="{cell_colors[3]}" stroke="none"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="{cell_colors[4]}" stroke="none"/>
     <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="{text_dim}">More</text>
   </g>"""
 
-    style_block = """  <style>
-    .ghgraph-badge-link { cursor: pointer; text-decoration: none; }
-    .ghgraph-badge-link:hover rect { opacity: 0.85; }
-    .cell { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards; }
-    .cell-active { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards, shimmerWave 6s ease-in-out infinite; }
-    @keyframes cellFadeIn { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
-    @keyframes shimmerWave { 0%, 82%, 100% { filter: brightness(1); } 90% { filter: brightness(1.38); } }
+    aurora_defs = (
+        f'  <defs>\n'
+        f'    <clipPath id="gh-card-clip"><rect width="820" height="{h}" rx="14"/></clipPath>\n'
+        f'    <filter id="gh-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="42"/></filter>\n'
+        f'  </defs>\n'
+        if anim_mode == "aurora"
+        else ""
+    )
+
+    aurora_bg = (
+        f'  <g clip-path="url(#gh-card-clip)" filter="url(#gh-blur)">\n'
+        f'    <ellipse class="gh-orb-1" cx="220" cy="110" rx="180" ry="70" fill="{ripple_lilac}" opacity="{"0.18" if is_dark else "0.20"}"/>\n'
+        f'    <ellipse class="gh-orb-2" cx="610" cy="120" rx="170" ry="65" fill="{ripple_pink}" opacity="{"0.16" if is_dark else "0.18"}"/>\n'
+        f'  </g>\n'
+        if anim_mode == "aurora"
+        else ""
+    )
+
+    if anim_mode == "ripple":
+        anim_css = (
+            f"    .gh-ca-pink {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRipplePink 6s ease-in-out infinite; }}\n"
+            f"    .gh-ca-lilac {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRippleLilac 6s ease-in-out infinite; }}\n"
+            f"    @keyframes ghRipplePink {{ 0%, 80%, 100% {{ transform: scale(1); }} 88% {{ transform: scale(1.18); fill: {ripple_pink}; }} }}\n"
+            f"    @keyframes ghRippleLilac {{ 0%, 80%, 100% {{ transform: scale(1); }} 88% {{ transform: scale(1.18); fill: {ripple_lilac}; }} }}"
+        )
+    elif anim_mode == "rain":
+        anim_css = (
+            f"    .gh-ca-rain {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRain 4.8s ease-in-out infinite; }}\n"
+            f"    @keyframes ghRain {{ 0%, 72%, 100% {{ filter: brightness(1); transform: scale(1); }} 80% {{ filter: brightness(1.55); transform: scale(1.15); fill: {ripple_pink}; }} 88% {{ filter: brightness(1.15); transform: scale(1); }} }}"
+        )
+    elif anim_mode == "aurora":
+        anim_css = (
+            f"    .gh-ca-aurora {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghBreathe 5s ease-in-out infinite; }}\n"
+            f"    .gh-orb-1 {{ animation: ghDrift1 11s ease-in-out infinite alternate; }}\n"
+            f"    .gh-orb-2 {{ animation: ghDrift2 13s ease-in-out infinite alternate; }}\n"
+            f"    @keyframes ghBreathe {{ 0%, 100% {{ filter: brightness(1); }} 50% {{ filter: brightness(1.3); }} }}\n"
+            f"    @keyframes ghDrift1 {{ from {{ transform: translate(-40px, -18px); }} to {{ transform: translate(110px, 22px); }} }}\n"
+            f"    @keyframes ghDrift2 {{ from {{ transform: translate(45px, 20px); }} to {{ transform: translate(-110px, -22px); }} }}"
+        )
+    else:
+        anim_css = (
+            f"    .gh-ca-rhythm {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRhythm 3.6s ease-in-out infinite; }}\n"
+            f"    @keyframes ghRhythm {{ 0%, 68%, 100% {{ transform: scale(1); filter: brightness(1); }} 78% {{ transform: scale(1.22); filter: brightness(1.4); fill: {ripple_lilac}; }} 88% {{ transform: scale(0.96); }} }}"
+        )
+
+    style_block = f"""  <style>
+    .gh-badge-link {{ cursor: pointer; text-decoration: none; }}
+    .gh-badge-link:hover rect {{ opacity: 0.85; }}
+    .gh-c {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards; }}
+    @keyframes ghFade {{ from {{ opacity: 0; transform: scale(0.84); }} to {{ opacity: 1; transform: scale(1); }} }}
+{anim_css}
   </style>"""
 
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 {h}" width="820" height="{h}" fill="none">
-{style_block}
+{aurora_defs}{style_block}
   <rect width="820" height="{h}" rx="14" fill="{bg}" stroke="{border}" stroke-width="1"/>
-  <text x="28" y="33" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="{text}">@{clean_user}</text>
-  <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer" class="ghgraph-badge-link">
-    <g transform="translate(726, 17)">
-      <rect width="66" height="22" rx="11" fill="{accent_container}"/>
-      <text x="33" y="15" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="{on_accent_container}">ghgraph</text>
+{aurora_bg}  <text x="28" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="{text}">@{clean_user}</text>
+  <a href="{FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(716, 16)">
+      <rect width="76" height="24" rx="12" fill="{accent_container}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="{on_accent_container}">ghgraph</text>
     </g>
   </a>
   {''.join(months_parts)}
@@ -964,16 +1032,16 @@ def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
 
     if len(themes) == 1 and out_path.suffix.lower() == ".svg":
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, themes[0], show_stats)
+        svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, themes[0], show_stats, args.anim)
         out_path.write_text(svg_text, encoding="utf-8")
-        print(f"generated {out_path} ({total_commits} contributions, {active_days} active days)")
+        print(f"generated {out_path} ({total_commits} contributions, {active_days} active days, anim={args.anim})")
     else:
         out_path.mkdir(parents=True, exist_ok=True)
         for t in themes:
             target = out_path / f"ghgraph-{t}.svg"
-            svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, t, show_stats)
+            svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, t, show_stats, args.anim)
             target.write_text(svg_text, encoding="utf-8")
-            print(f"generated {target} ({total_commits} contributions, {active_days} active days)")
+            print(f"generated {target} ({total_commits} contributions, {active_days} active days, anim={args.anim})")
 
     return 0
 
@@ -1171,6 +1239,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--username", help="GitHub username for --card (default: inferred from --repo or token)")
     p.add_argument("--theme", choices=["dark", "light", "both"], default="both",
                    help="card theme for --card (default: both)")
+    p.add_argument("--anim", choices=["ripple", "rain", "aurora", "rhythm"], default="ripple",
+                   help="SVG animation preset for --card (default: ripple)")
     p.add_argument("--output", default="assets",
                    help="output directory or .svg file path for --card (default: assets)")
     p.add_argument("--no-stats", action="store_true",

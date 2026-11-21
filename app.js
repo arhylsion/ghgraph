@@ -430,6 +430,7 @@
   const closeStudioBtn = document.getElementById('closeStudioBtn');
   const studioUsername = document.getElementById('studioUsername');
   const studioThemePills = document.getElementById('studioThemePills');
+  const studioAnimPills = document.getElementById('studioAnimPills');
   const studioModePills = document.getElementById('studioModePills');
   const studioStatsToggle = document.getElementById('studioStatsToggle');
   const studioSvgPreview = document.getElementById('studioSvgPreview');
@@ -441,7 +442,9 @@
   const downloadLightSvgBtn = document.getElementById('downloadLightSvgBtn');
   const copySvgRawBtn = document.getElementById('copySvgRawBtn');
 
+  const FIXED_SITE_URL = 'https://arhylsion.github.io/ghgraph/';
   let currentStudioTheme = 'dark';
+  let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
 
   function escapeXml(str) {
@@ -453,10 +456,11 @@
       .replace(/'/g, '&#39;');
   }
 
-  function buildProfileCardSvg(username, theme, showStats) {
+  function buildProfileCardSvg(username, theme, showStats, anim) {
     const cleanUser = escapeXml((username || '').trim() || 'username');
     const isDark = theme === 'dark';
-    const h = showStats ? 204 : 166;
+    const animMode = anim || 'ripple';
+    const h = showStats ? 218 : 212;
 
     const bg = isDark ? '#1a181c' : '#ffffff';
     const border = isDark ? 'rgba(206, 196, 207, 0.12)' : 'rgba(78, 68, 82, 0.14)';
@@ -465,7 +469,9 @@
     const accent = isDark ? '#d9b9ff' : '#6e4d8e';
     const accentContainer = isDark ? '#533571' : '#efddff';
     const onAccentContainer = isDark ? '#efddff' : '#270747';
-    const cellBorder = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    const emptyBorder = isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)';
+    const ripplePink = isDark ? '#fca5b9' : '#ec4899';
+    const rippleLilac = isDark ? '#d9b9ff' : '#8b5cf6';
 
     const cellColors = isDark
       ? { 0: '#211e23', 1: '#1c382b', 2: '#2d6248', 3: '#50b57e', 4: '#8af2b3' }
@@ -476,13 +482,11 @@
     let cellsSvg = '';
 
     const startX = 56;
-    const startY = 66;
+    const startY = 78;
     const step = 14.5;
     const cellSize = 11;
 
     for (let c = 0; c < WEEKS; c++) {
-      const fadeDelay = (c * 0.018).toFixed(3);
-      const shimmerDelay = (1.2 + c * 0.055).toFixed(3);
       for (let r = 0; r < DAYS; r++) {
         const lvl = grid[c][r];
         if (lvl > 0) {
@@ -492,11 +496,34 @@
         const x = (startX + c * step).toFixed(1);
         const y = (startY + r * step).toFixed(1);
         const color = cellColors[lvl];
-        const cls = lvl > 0 ? 'cell-active' : 'cell';
-        const delayStyle = lvl > 0
-          ? `animation-delay:${fadeDelay}s,${shimmerDelay}s;`
-          : `animation-delay:${fadeDelay}s;`;
-        cellsSvg += `<rect class="${cls}" x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" fill="${color}" stroke="${cellBorder}" stroke-width="0.7" style="${delayStyle}"/>`;
+        const strokeAttr = lvl === 0 ? `stroke="${emptyBorder}" stroke-width="0.5"` : 'stroke="none"';
+
+        const enterDelay = ((c + r) * 0.014).toFixed(3);
+        let cls = 'gh-c';
+        let delayStyle = `animation-delay:${enterDelay}s;`;
+
+        if (lvl > 0) {
+          if (animMode === 'ripple') {
+            cls = c % 2 === 0 ? 'gh-ca-pink' : 'gh-ca-lilac';
+            const loopDelay = (1.0 + (c + r) * 0.055).toFixed(3);
+            delayStyle = `animation-delay:${enterDelay}s,${loopDelay}s;`;
+          } else if (animMode === 'rain') {
+            cls = 'gh-ca-rain';
+            const colPhase = ((c * 13) % 17) * 0.28;
+            const loopDelay = (0.8 + colPhase + r * 0.14).toFixed(3);
+            delayStyle = `animation-delay:${enterDelay}s,${loopDelay}s;`;
+          } else if (animMode === 'aurora') {
+            cls = 'gh-ca-aurora';
+            const loopDelay = (0.8 + (c % 12) * 0.35 + r * 0.12).toFixed(3);
+            delayStyle = `animation-delay:${enterDelay}s,${loopDelay}s;`;
+          } else {
+            cls = 'gh-ca-rhythm';
+            const loopDelay = (0.8 + (6 - r) * 0.11 + (c % 8) * 0.22).toFixed(3);
+            delayStyle = `animation-delay:${enterDelay}s,${loopDelay}s;`;
+          }
+        }
+
+        cellsSvg += `<rect class="${cls}" x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" fill="${color}" ${strokeAttr} style="${delayStyle}"/>`;
       }
     }
 
@@ -510,7 +537,7 @@
     let monthsSvg = '';
     monthCols.forEach(m => {
       const x = (startX + m.col * step).toFixed(1);
-      monthsSvg += `<text x="${x}" y="52" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
+      monthsSvg += `<text x="${x}" y="64" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${m.name}</text>`;
     });
 
     const weekdays = [
@@ -525,7 +552,7 @@
       weekdaysSvg += `<text x="28" y="${y}" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="500" fill="${textDim}">${w.name}</text>`;
     });
 
-    const legendY = showStats ? 186 : 150;
+    const legendY = showStats ? 200 : 196;
     const statsSvg = showStats
       ? `<text x="28" y="0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="${accent}">${totalCommits} contributions · ${activeDays} active days</text>`
       : '';
@@ -534,31 +561,63 @@
   <g transform="translate(0, ${legendY})">
     ${statsSvg}
     <text x="696" y="0" text-anchor="end" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">Less</text>
-    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="${cellBorder}" stroke-width="0.5"/>
-    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="${cellBorder}" stroke-width="0.5"/>
+    <rect x="704" y="-9" width="9" height="9" rx="2" fill="${cellColors[0]}" stroke="${emptyBorder}" stroke-width="0.5"/>
+    <rect x="716" y="-9" width="9" height="9" rx="2" fill="${cellColors[1]}" stroke="none"/>
+    <rect x="728" y="-9" width="9" height="9" rx="2" fill="${cellColors[2]}" stroke="none"/>
+    <rect x="740" y="-9" width="9" height="9" rx="2" fill="${cellColors[3]}" stroke="none"/>
+    <rect x="752" y="-9" width="9" height="9" rx="2" fill="${cellColors[4]}" stroke="none"/>
     <text x="768" y="0" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="${textDim}">More</text>
   </g>`;
 
+    const auroraDefs = animMode === 'aurora' ? `  <defs>
+    <clipPath id="gh-card-clip"><rect width="820" height="${h}" rx="14"/></clipPath>
+    <filter id="gh-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="42"/></filter>
+  </defs>` : '';
+
+    const auroraBg = animMode === 'aurora' ? `  <g clip-path="url(#gh-card-clip)" filter="url(#gh-blur)">
+    <ellipse class="gh-orb-1" cx="220" cy="110" rx="180" ry="70" fill="${rippleLilac}" opacity="${isDark ? '0.18' : '0.20'}"/>
+    <ellipse class="gh-orb-2" cx="610" cy="120" rx="170" ry="65" fill="${ripplePink}" opacity="${isDark ? '0.16' : '0.18'}"/>
+  </g>` : '';
+
+    let animCss = '';
+    if (animMode === 'ripple') {
+      animCss = `    .gh-ca-pink { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRipplePink 6s ease-in-out infinite; }
+    .gh-ca-lilac { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRippleLilac 6s ease-in-out infinite; }
+    @keyframes ghRipplePink { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${ripplePink}; } }
+    @keyframes ghRippleLilac { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.18); fill: ${rippleLilac}; } }`;
+    } else if (animMode === 'rain') {
+      animCss = `    .gh-ca-rain { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRain 4.8s ease-in-out infinite; }
+    @keyframes ghRain { 0%, 72%, 100% { filter: brightness(1); transform: scale(1); } 80% { filter: brightness(1.55); transform: scale(1.15); fill: ${ripplePink}; } 88% { filter: brightness(1.15); transform: scale(1); } }`;
+    } else if (animMode === 'aurora') {
+      animCss = `    .gh-ca-aurora { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghBreathe 5s ease-in-out infinite; }
+    .gh-orb-1 { animation: ghDrift1 11s ease-in-out infinite alternate; }
+    .gh-orb-2 { animation: ghDrift2 13s ease-in-out infinite alternate; }
+    @keyframes ghBreathe { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+    @keyframes ghDrift1 { from { transform: translate(-40px, -18px); } to { transform: translate(110px, 22px); } }
+    @keyframes ghDrift2 { from { transform: translate(45px, 20px); } to { transform: translate(-110px, -22px); } }`;
+    } else {
+      animCss = `    .gh-ca-rhythm { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards, ghRhythm 3.6s ease-in-out infinite; }
+    @keyframes ghRhythm { 0%, 68%, 100% { transform: scale(1); filter: brightness(1); } 78% { transform: scale(1.22); filter: brightness(1.4); fill: ${rippleLilac}; } 88% { transform: scale(0.96); } }`;
+    }
+
     const styleBlock = `  <style>
-    .ghgraph-badge-link { cursor: pointer; text-decoration: none; }
-    .ghgraph-badge-link:hover rect { opacity: 0.85; }
-    .cell { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards; }
-    .cell-active { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cellFadeIn 0.45s cubic-bezier(0.2, 0, 0, 1) forwards, shimmerWave 6s ease-in-out infinite; }
-    @keyframes cellFadeIn { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
-    @keyframes shimmerWave { 0%, 82%, 100% { filter: brightness(1); } 90% { filter: brightness(1.38); } }
+    .gh-badge-link { cursor: pointer; text-decoration: none; }
+    .gh-badge-link:hover rect { opacity: 0.85; }
+    .gh-c { opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards; }
+    @keyframes ghFade { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
+${animCss}
   </style>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 ${h}" width="820" height="${h}" fill="none">
+${auroraDefs}
 ${styleBlock}
   <rect width="820" height="${h}" rx="14" fill="${bg}" stroke="${border}" stroke-width="1"/>
-  <text x="28" y="33" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
-  <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer" class="ghgraph-badge-link">
-    <g transform="translate(726, 17)">
-      <rect width="66" height="22" rx="11" fill="${accentContainer}"/>
-      <text x="33" y="15" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
+${auroraBg}
+  <text x="28" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="${text}">@${cleanUser}</text>
+  <a href="${FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
+    <g transform="translate(716, 16)">
+      <rect width="76" height="24" rx="12" fill="${accentContainer}"/>
+      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="${onAccentContainer}">ghgraph</text>
     </g>
   </a>
   ${monthsSvg}
@@ -572,12 +631,12 @@ ${styleBlock}
     if (!studioSvgPreview) return;
     const username = (studioUsername ? studioUsername.value : '') || 'arhylsion';
     const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-    const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
+    const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats, currentStudioAnim);
     studioSvgPreview.innerHTML = svgCode;
 
     if (readmeSnippetOutput) {
       const u = username.trim() || 'username';
-      readmeSnippetOutput.textContent = `<a href="https://github.com/arhylsion/ghgraph">
+      readmeSnippetOutput.textContent = `<a href="${FIXED_SITE_URL}">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/${u}/${u}/main/assets/ghgraph-light.svg">
@@ -609,7 +668,7 @@ jobs:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
-          python3 ghgraph.py --card --username \${{ github.repository_owner }} --theme both --output assets/${statsFlag}
+          python3 ghgraph.py --card --username \${{ github.repository_owner }} --theme both --anim ${currentStudioAnim} --output assets/${statsFlag}
           rm -f ghgraph.py
 
       - name: Commit and push changes
@@ -624,7 +683,7 @@ jobs:
   function triggerSvgDownload(theme) {
     const username = (studioUsername ? studioUsername.value : '') || 'username';
     const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-    const svgCode = buildProfileCardSvg(username, theme, showStats);
+    const svgCode = buildProfileCardSvg(username, theme, showStats, currentStudioAnim);
     const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -693,6 +752,22 @@ jobs:
       });
     }
 
+    if (studioAnimPills) {
+      const pills = studioAnimPills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentStudioAnim = pill.dataset.anim;
+          updateStudioPreview();
+        });
+      });
+    }
+
     if (studioModePills) {
       const pills = studioModePills.querySelectorAll('.studio-pill');
       pills.forEach(pill => {
@@ -730,7 +805,7 @@ jobs:
       copySvgRawBtn.addEventListener('click', () => {
         const username = (studioUsername ? studioUsername.value : '') || 'username';
         const showStats = studioStatsToggle ? studioStatsToggle.checked : true;
-        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats);
+        const svgCode = buildProfileCardSvg(username, currentStudioTheme, showStats, currentStudioAnim);
         navigator.clipboard.writeText(svgCode).then(() => {
           const btnSpan = copySvgRawBtn.querySelector('span');
           if (btnSpan) {
