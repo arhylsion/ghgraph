@@ -11,7 +11,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="css/tokens.css?v=11">
+  <link rel="stylesheet" href="css/base.css?v=11">
+  <link rel="stylesheet" href="css/painter.css?v=11">
+  <link rel="stylesheet" href="css/studio.css?v=11">
 </head>
 <body>
   <div class="page-container">
@@ -408,9 +411,12 @@
       <div class="footer-meta">
         <span>ghgraph · Open source under MIT License</span>
         <div class="footer-links">
-          <button id="openTosFooterBtn" class="footer-tos-link" type="button">Terms & Privacy Disclaimer</button>
+          <button id="openTosFooterBtn" class="footer-tos-link" type="button">Terms &amp; Privacy Disclaimer</button>
           <a href="https://github.com/arhylsion/ghgraph" target="_blank" rel="noopener noreferrer">github.com/arhylsion/ghgraph</a>
         </div>
+      </div>
+      <div class="footer-updated">
+        last update <time id="lastUpdateTime" datetime="2026-11-21T05:51:00Z">2026-11-21 05:51 UTC</time>
       </div>
     </footer>
   </div>
@@ -530,7 +536,7 @@
           <div class="studio-fetch-row">
             <div class="studio-input-box">
               <span class="studio-at">@</span>
-              <input id="studioUsername" type="text" class="studio-text-input studio-text-mono" value="arhylsion" placeholder="username" spellcheck="false" autocomplete="off">
+              <input id="studioUsername" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. octocat" spellcheck="false" autocomplete="off">
             </div>
             <button id="fetchContribBtn" class="studio-fetch-btn" type="button" title="Fetch real public contributions from GitHub">Fetch</button>
             <button id="usePaintedBtn" class="studio-action-btn studio-painted-btn" type="button" hidden title="Switch back to painted canvas">Painted</button>
@@ -576,28 +582,28 @@
         <div class="studio-input-wrap">
           <label for="heroNameInput" class="studio-label">Display Name</label>
           <div class="studio-input-box">
-            <input id="heroNameInput" type="text" class="studio-text-input" value="Arhylsion" placeholder="Your Name" spellcheck="false">
+            <input id="heroNameInput" type="text" class="studio-text-input" value="" placeholder="e.g. Alex Chen" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="heroStatusInput" class="studio-label">Status &amp; Location</label>
           <div class="studio-input-box">
-            <input id="heroStatusInput" type="text" class="studio-text-input" value="Building open-source tools · Indonesia" placeholder="Taking on freelance work · City" spellcheck="false">
+            <input id="heroStatusInput" type="text" class="studio-text-input" value="" placeholder="e.g. Building open-source tools · Tokyo" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
           <label for="heroHeadline1Input" class="studio-label">Headline Line 1 (Primary)</label>
           <div class="studio-input-box">
-            <input id="heroHeadline1Input" type="text" class="studio-text-input" value="I build fast tools that do the work," placeholder="Main bold headline line" spellcheck="false">
+            <input id="heroHeadline1Input" type="text" class="studio-text-input" value="" placeholder="e.g. I build fast tools that do the work," spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
           <label for="heroHeadline2Input" class="studio-label">Headline Line 2 (Muted Accent)</label>
           <div class="studio-input-box">
-            <input id="heroHeadline2Input" type="text" class="studio-text-input" value="and the interfaces they live in." placeholder="Second editorial line" spellcheck="false">
+            <input id="heroHeadline2Input" type="text" class="studio-text-input" value="" placeholder="e.g. and the interfaces they live in." spellcheck="false">
           </div>
         </div>
 
@@ -605,7 +611,7 @@
           <label for="heroAvatarInput" class="studio-label">Avatar Image (optional — path like <code>assets/avatar.png</code>, URL, or upload to inline)</label>
           <div class="studio-fetch-row">
             <div class="studio-input-box">
-              <input id="heroAvatarInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="assets/avatar.png (leave empty for monogram)" spellcheck="false">
+              <input id="heroAvatarInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. assets/avatar.png (leave empty for monogram)" spellcheck="false">
             </div>
             <input id="heroAvatarFile" type="file" accept="image/*" hidden>
             <button id="heroAvatarUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload local avatar image to embed directly inside SVG">Upload</button>
@@ -618,26 +624,28 @@
         <div class="studio-input-wrap">
           <label for="stackTitleInput" class="studio-label">Heading Bold</label>
           <div class="studio-input-box">
-            <input id="stackTitleInput" type="text" class="studio-text-input" value="Tools." placeholder="Tools." spellcheck="false">
+            <input id="stackTitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Tools." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="stackSubtitleInput" class="studio-label">Heading Muted</label>
           <div class="studio-input-box">
-            <input id="stackSubtitleInput" type="text" class="studio-text-input" value="What I build with." placeholder="What I build with." spellcheck="false">
+            <input id="stackSubtitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. What I build with." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
           <div class="studio-label-row">
-            <label for="stackItemsInput" class="studio-label">Technologies (comma-separated — fetched dynamically from Simple Icons)</label>
+            <label for="stackItemsInput" class="studio-label">Technologies (comma-separated — auto-matched from Simple Icons)</label>
             <span id="stackIconStatus" class="studio-fetch-status"></span>
           </div>
-          <div class="studio-input-box">
-            <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="TypeScript, Python, React, Next.js, Node.js, Vite, Astro, Tailwind CSS, PostgreSQL, Supabase, Docker, Cursor, Claude, n8n, Git" placeholder="TypeScript, Python, Flutter, Rust, Kubernetes..." spellcheck="false">
+          <div id="stackSuggestWrap" class="studio-autocomplete-wrap">
+            <div class="studio-input-box">
+              <input id="stackItemsInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. Next.js, React, TypeScript, Python, Docker" spellcheck="false" autocomplete="off">
+            </div>
+            <div id="stackSuggestMenu" class="studio-suggest-menu" role="listbox" hidden></div>
           </div>
-          <div id="stackQuickPicks" class="stack-quick-picks" aria-label="Quick toggle technologies"></div>
         </div>
       </div>
 
@@ -645,20 +653,20 @@
         <div class="studio-input-wrap">
           <label for="workTitleInput" class="studio-label">Section Heading Bold</label>
           <div class="studio-input-box">
-            <input id="workTitleInput" type="text" class="studio-text-input" value="Selected work." placeholder="Selected work." spellcheck="false">
+            <input id="workTitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Selected work." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="workSubtitleInput" class="studio-label">Section Heading Muted</label>
           <div class="studio-input-box">
-            <input id="workSubtitleInput" type="text" class="studio-text-input" value="Products, client sites and open source." placeholder="Products, client sites and my own label." spellcheck="false">
+            <input id="workSubtitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Products, client sites and open source." spellcheck="false">
           </div>
         </div>
 
         <div class="proj-canvas-toolbar studio-field-full">
           <div class="proj-toolbar-meta">
-            <span id="projEditingLabel" class="proj-editing-pill">Editing: ghgraph (1 of 3)</span>
+            <span id="projEditingLabel" class="proj-editing-pill">Editing: Project 1 (1 of 1)</span>
             <span class="proj-drag-hint">Drag cards in the canvas below to reorder, or click 100% / 49% to resize</span>
           </div>
           <div class="proj-toolbar-actions">
@@ -671,28 +679,28 @@
         <div class="studio-input-wrap">
           <label for="projNameInput" class="studio-label">Project Name</label>
           <div class="studio-input-box">
-            <input id="projNameInput" type="text" class="studio-text-input" value="ghgraph" placeholder="Project Name" spellcheck="false">
+            <input id="projNameInput" type="text" class="studio-text-input" value="" placeholder="e.g. My App" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="projCatInput" class="studio-label">Category / Tag (Featured 100%)</label>
           <div class="studio-input-box">
-            <input id="projCatInput" type="text" class="studio-text-input" value="CLI &amp; Profile README Studio" placeholder="Native app / SaaS / Open Source" spellcheck="false">
+            <input id="projCatInput" type="text" class="studio-text-input" value="" placeholder="e.g. Web App / CLI / SaaS" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
           <label for="projDescInput" class="studio-label">Short Description</label>
           <div class="studio-input-box">
-            <input id="projDescInput" type="text" class="studio-text-input" value="Back-dated GitHub contribution graph painter and M3 Expressive profile kit generator." placeholder="One-sentence summary of the project" spellcheck="false">
+            <input id="projDescInput" type="text" class="studio-text-input" value="" placeholder="e.g. One-sentence summary of what your project does." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="projUrlInput" class="studio-label">Project URL</label>
           <div class="studio-input-box">
-            <input id="projUrlInput" type="text" class="studio-text-input studio-text-mono" value="https://arhylsion.github.io/ghgraph/" placeholder="https://example.com" spellcheck="false">
+            <input id="projUrlInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. https://example.com" spellcheck="false">
           </div>
         </div>
 
@@ -700,7 +708,7 @@
           <div class="studio-input-wrap">
             <label for="projYearInput" class="studio-label">Year (49% Card)</label>
             <div class="studio-input-box">
-              <input id="projYearInput" type="text" class="studio-text-input studio-text-mono" value="2026" placeholder="2026" spellcheck="false">
+              <input id="projYearInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. 2026" spellcheck="false">
             </div>
           </div>
 
@@ -715,25 +723,27 @@
 
         <div class="studio-input-wrap studio-field-full">
           <div class="studio-label-row">
-            <label for="projIconInput" class="studio-label">Project Icon (pick below, type any Simple Icons slug, or upload custom logo)</label>
+            <label for="projIconInput" class="studio-label">Project Icon (type any Simple Icons slug, focus to browse, or upload logo)</label>
             <span id="projIconStatus" class="studio-fetch-status"></span>
           </div>
-          <div class="studio-fetch-row">
-            <div class="studio-input-box">
-              <input id="projIconInput" type="text" class="studio-text-input studio-text-mono" value="github" placeholder="sparkles, terminal, react, apple, figma, assets/logo.png..." spellcheck="false">
+          <div id="projIconSuggestWrap" class="studio-autocomplete-wrap">
+            <div class="studio-fetch-row">
+              <div class="studio-input-box">
+                <input id="projIconInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. github, react, terminal, sparkles, or assets/logo.png" spellcheck="false" autocomplete="off">
+              </div>
+              <input id="projIconFile" type="file" accept="image/*" hidden>
+              <button id="projIconUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload custom app logo PNG/JPG">Upload</button>
+              <button id="projIconClearBtn" class="studio-action-btn studio-painted-btn" type="button" title="Use 2-letter monogram">Monogram</button>
             </div>
-            <input id="projIconFile" type="file" accept="image/*" hidden>
-            <button id="projIconUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload custom app logo PNG/JPG">Upload</button>
-            <button id="projIconClearBtn" class="studio-action-btn studio-painted-btn" type="button" title="Use 2-letter monogram">Monogram</button>
+            <div id="projIconSuggestMenu" class="studio-suggest-menu studio-icon-suggest-menu" role="listbox" hidden></div>
           </div>
-          <div id="projIconPicker" class="proj-icon-picker" aria-label="Choose project icon"></div>
         </div>
 
         <div class="studio-input-wrap studio-field-full">
           <label for="projImageInput" class="studio-label">Cover Screenshot (optional — path like <code>assets/preview.png</code> or upload to inline)</label>
           <div class="studio-fetch-row">
             <div class="studio-input-box">
-              <input id="projImageInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="Leave empty for clean M3 studio preview frame" spellcheck="false">
+              <input id="projImageInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. assets/preview.png (leave empty for M3 frame)" spellcheck="false">
             </div>
             <input id="projImageFile" type="file" accept="image/*" hidden>
             <button id="projImageUploadBtn" class="studio-action-btn studio-painted-btn" type="button" title="Upload project screenshot">Upload</button>
@@ -746,14 +756,14 @@
         <div class="studio-input-wrap">
           <label for="contactTitleInput" class="studio-label">Heading Bold</label>
           <div class="studio-input-box">
-            <input id="contactTitleInput" type="text" class="studio-text-input" value="Say hi." placeholder="Say hi." spellcheck="false">
+            <input id="contactTitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Say hi." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="contactSubtitleInput" class="studio-label">Heading Muted</label>
           <div class="studio-input-box">
-            <input id="contactSubtitleInput" type="text" class="studio-text-input" value="Tell me what's slowing you down." placeholder="Let's build something together." spellcheck="false">
+            <input id="contactSubtitleInput" type="text" class="studio-text-input" value="" placeholder="e.g. Let's build something together." spellcheck="false">
           </div>
         </div>
 
@@ -769,14 +779,11 @@
         </div>
 
         <div class="studio-input-wrap studio-field-full">
-          <label for="contactItemsInput" class="studio-label">Socials (<code>Platform | URL</code>, one per line — icons fetched from Simple Icons)</label>
-          <textarea id="contactItemsInput" class="studio-textarea studio-text-mono" rows="4" spellcheck="false">GitHub | https://github.com/arhylsion
-LinkedIn | https://linkedin.com/in/arhylsion
-X | https://x.com/arhylsion
-Instagram | https://instagram.com/arhylsion
-WhatsApp | https://wa.me/628123456789
-Luma | https://lu.ma/arhylsion</textarea>
-          <div id="contactQuickPicks" class="stack-quick-picks" aria-label="Quick toggle social platforms"></div>
+          <label for="contactItemsInput" class="studio-label">Socials (<code>Platform | URL</code>, one per line — auto-matched from Simple Icons)</label>
+          <div id="contactSuggestWrap" class="studio-autocomplete-wrap">
+            <textarea id="contactItemsInput" class="studio-textarea studio-text-mono" rows="4" spellcheck="false" placeholder="e.g.&#10;GitHub | https://github.com/username&#10;X | https://x.com/username"></textarea>
+            <div id="contactSuggestMenu" class="studio-suggest-menu" role="listbox" hidden></div>
+          </div>
         </div>
       </div>
 
@@ -787,21 +794,21 @@ Luma | https://lu.ma/arhylsion</textarea>
             <button id="shuffleQuoteBtn" class="studio-action-btn" type="button" title="Pick a random classic developer quote">Shuffle Quote</button>
           </div>
           <div class="studio-input-box">
-            <input id="quoteTextInput" type="text" class="studio-text-input" value="Within a computer, natural language is unnatural." placeholder="Enter your favorite dev quote" spellcheck="false">
+            <input id="quoteTextInput" type="text" class="studio-text-input" value="" placeholder="e.g. Talk is cheap. Show me the code." spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="quoteAuthorInput" class="studio-label">Author</label>
           <div class="studio-input-box">
-            <input id="quoteAuthorInput" type="text" class="studio-text-input" value="Alan Perlis" placeholder="Author Name" spellcheck="false">
+            <input id="quoteAuthorInput" type="text" class="studio-text-input" value="" placeholder="e.g. Linus Torvalds" spellcheck="false">
           </div>
         </div>
 
         <div class="studio-input-wrap">
           <label for="quoteLabelInput" class="studio-label">Card Label</label>
           <div class="studio-input-box">
-            <input id="quoteLabelInput" type="text" class="studio-text-input studio-text-mono" value="Random Dev Quote" placeholder="Dev Quote" spellcheck="false">
+            <input id="quoteLabelInput" type="text" class="studio-text-input studio-text-mono" value="" placeholder="e.g. Dev Quote" spellcheck="false">
           </div>
         </div>
       </div>
@@ -993,6 +1000,6 @@ Luma | https://lu.ma/arhylsion</textarea>
     </div>
   </div>
 
-  <script src="app.js?v=9"></script>
+  <script type="module" src="js/main.js?v=12"></script>
 </body>
 </html>

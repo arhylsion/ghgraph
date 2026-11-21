@@ -815,9 +815,6 @@ def fetch_calendar_via_public_html(login: str) -> tuple[list[list[int]], list[tu
     return grid, month_labels, total_contributions, active_days
 
 
-FIXED_SITE_URL = "https://arhylsion.github.io/ghgraph/"
-
-
 def render_svg_card(
     username: str,
     grid: list[list[int]],
@@ -974,8 +971,6 @@ def render_svg_card(
         )
 
     style_block = f"""  <style>
-    .gh-badge-link {{ cursor: pointer; text-decoration: none; }}
-    .gh-badge-link:hover rect {{ opacity: 0.85; }}
     .gh-c {{ opacity: 0; transform-box: fill-box; transform-origin: center; animation: ghFade 0.42s cubic-bezier(0.2, 0, 0, 1) forwards; }}
     @keyframes ghFade {{ from {{ opacity: 0; transform: scale(0.84); }} to {{ opacity: 1; transform: scale(1); }} }}
 {anim_css}
@@ -985,12 +980,6 @@ def render_svg_card(
 {aurora_defs}{style_block}
   <rect width="820" height="{h}" rx="14" fill="{bg}" stroke="{border}" stroke-width="1"/>
 {aurora_bg}  <text x="28" y="34" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="{text}">@{clean_user}</text>
-  <a href="{FIXED_SITE_URL}" target="_blank" rel="noopener noreferrer" class="gh-badge-link">
-    <g transform="translate(716, 16)">
-      <rect width="76" height="24" rx="12" fill="{accent_container}"/>
-      <text x="38" y="16" text-anchor="middle" font-family="'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="{on_accent_container}">ghgraph</text>
-    </g>
-  </a>
   {''.join(months_parts)}
   {''.join(weekdays_parts)}
   <g>{''.join(cells_parts)}</g>

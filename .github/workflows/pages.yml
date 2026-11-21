@@ -25,6 +25,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Stamp last update UTC time
+        run: |
+          python3 -c '
+          import re, subprocess
+          from datetime import datetime, timezone
+          ts = int(subprocess.check_output(["git", "log", "-1", "--format=%ct"]).decode().strip())
+          dt = datetime.fromtimestamp(ts, timezone.utc)
+          iso = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+          human = dt.strftime("%Y-%m-%d %H:%M UTC")
+          with open("index.html", "r", encoding="utf-8") as f:
+              html = f.read()
+          updated = re.sub(
+              r"<time id=\"lastUpdateTime\" datetime=\"[^\"]*\">[^<]*</time>",
+              f"<time id=\"lastUpdateTime\" datetime=\"{iso}\">{human}</time>",
+              html,
+          )
+          with open("index.html", "w", encoding="utf-8") as f:
+              f.write(updated)
+          print(f"Stamped last update: {human}")
+          '
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
