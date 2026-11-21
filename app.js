@@ -439,6 +439,8 @@
   const fetchStatusText = document.getElementById('fetchStatusText');
   const studioAnimPills = document.getElementById('studioAnimPills');
   const studioModePills = document.getElementById('studioModePills');
+  const studioScopeGroup = document.getElementById('studioScopeGroup');
+  const studioScopePills = document.getElementById('studioScopePills');
   const studioStatsToggle = document.getElementById('studioStatsToggle');
   const heroNameInput = document.getElementById('heroNameInput');
   const heroStatusInput = document.getElementById('heroStatusInput');
@@ -480,6 +482,7 @@
   let currentStudioTheme = 'dark';
   let currentStudioAnim = 'ripple';
   let currentStudioMode = 'action';
+  let currentWorkflowScope = 'public';
   let currentEmbedScope = 'kit';
   let fetchedState = null;
   let iconFetchTimer = null;
@@ -1054,8 +1057,14 @@ ${auroraBg}
       }
     }
 
+    if (studioScopeGroup) {
+      studioScopeGroup.toggleAttribute('hidden', currentStudioMode !== 'action');
+    }
+
     if (workflowYamlOutput) {
       const statsFlag = showStats ? '' : ' --no-stats';
+      const scopeFlag = currentWorkflowScope === 'private' ? ' --private' : ' --public';
+      const tokenSecret = currentWorkflowScope === 'private' ? 'GH_PAT' : 'GITHUB_TOKEN';
       workflowYamlOutput.textContent = `name: Refresh Profile Heatmap
 
 on:
@@ -1074,10 +1083,10 @@ jobs:
 
       - name: Generate Animated Heatmap Cards
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: \${{ secrets.${tokenSecret} }}
         run: |
           curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
-          python3 ghgraph.py --card --username \${{ github.repository_owner }} --theme both --anim ${currentStudioAnim} --output assets/${statsFlag}
+          python3 ghgraph.py --card --username \${{ github.repository_owner }} --theme both --anim ${currentStudioAnim}${scopeFlag} --output assets/${statsFlag}
           rm -f ghgraph.py
 
       - name: Commit and push changes
@@ -1417,6 +1426,22 @@ jobs:
           pill.classList.add('active');
           pill.setAttribute('aria-selected', 'true');
           currentStudioMode = pill.dataset.mode;
+          updateStudioPreview();
+        });
+      });
+    }
+
+    if (studioScopePills) {
+      const pills = studioScopePills.querySelectorAll('.studio-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          });
+          pill.classList.add('active');
+          pill.setAttribute('aria-selected', 'true');
+          currentWorkflowScope = pill.dataset.scope;
           updateStudioPreview();
         });
       });

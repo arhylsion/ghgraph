@@ -1005,8 +1005,17 @@ def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
     if not username and args.repo and "/" in args.repo:
         username = args.repo.split("/", 1)[0]
 
+    scope = "public" if args.public else ("private" if args.private else "auto")
+
+    if scope == "private" and not token:
+        print(
+            "--private requires a GitHub Personal Access Token (set GITHUB_TOKEN or pass --token with 'read:user' or 'repo' scope).",
+            file=sys.stderr,
+        )
+        return 2
+
     api: GitHubAPI | None = None
-    if token:
+    if token and scope != "public":
         api = GitHubAPI(token)
         if not username:
             try:
@@ -1018,7 +1027,12 @@ def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
         print("Provide --username USER (or --repo USER/REPO) when using --card.", file=sys.stderr)
         return 2
 
-    if api is not None:
+    if scope == "public":
+        grid, month_labels, total_commits, active_days = fetch_calendar_via_public_html(username)
+    elif scope == "private":
+        assert api is not None
+        grid, month_labels, total_commits, active_days = fetch_calendar_via_graphql(api, username)
+    elif api is not None:
         try:
             grid, month_labels, total_commits, active_days = fetch_calendar_via_graphql(api, username)
         except SystemExit:
@@ -1034,14 +1048,14 @@ def execute_card_generation(args: argparse.Namespace, token: str | None) -> int:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, themes[0], show_stats, args.anim)
         out_path.write_text(svg_text, encoding="utf-8")
-        print(f"generated {out_path} ({total_commits} contributions, {active_days} active days, anim={args.anim})")
+        print(f"generated {out_path} ({total_commits} contributions, {active_days} active days, anim={args.anim}, scope={scope})")
     else:
         out_path.mkdir(parents=True, exist_ok=True)
         for t in themes:
             target = out_path / f"ghgraph-{t}.svg"
             svg_text = render_svg_card(username, grid, month_labels, total_commits, active_days, t, show_stats, args.anim)
             target.write_text(svg_text, encoding="utf-8")
-            print(f"generated {target} ({total_commits} contributions, {active_days} active days, anim={args.anim})")
+            print(f"generated {target} ({total_commits} contributions, {active_days} active days, anim={args.anim}, scope={scope})")
 
     return 0
 
@@ -1245,6 +1259,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help="output directory or .svg file path for --card (default: assets)")
     p.add_argument("--no-stats", action="store_true",
                    help="hide summary stats bar on generated --card SVG")
+    vis = p.add_mutually_exclusive_group()
+    vis.add_argument("--public", action="store_true",
+                     help="for --card: fetch public contributions only (overrides PAT private access)")
+    vis.add_argument("--private", action="store_true",
+                     help="for --card: fetch all public and private contributions (requires PAT token)")
 
     p.add_argument("--dry-run", action="store_true", help="print the plan, touch nothing")
     p.add_argument("-y", "--yes", action="store_true", help="skip the confirmation prompt")

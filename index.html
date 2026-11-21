@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <div class="page-container">
@@ -550,7 +550,15 @@
           </div>
         </div>
 
-        <div class="studio-group studio-toggle-group">
+        <div id="studioScopeGroup" class="studio-group">
+          <span class="studio-label">Workflow Scope</span>
+          <div id="studioScopePills" class="studio-pills" role="tablist">
+            <button class="studio-pill active" data-scope="public" type="button" role="tab" aria-selected="true">Public Only</button>
+            <button class="studio-pill" data-scope="private" type="button" role="tab" aria-selected="false">Public + Private (PAT)</button>
+          </div>
+        </div>
+
+        <div class="studio-group studio-toggle-group studio-field-full">
           <label class="studio-checkbox-label">
             <input id="studioStatsToggle" type="checkbox" checked class="studio-checkbox">
             <span>Include stats bar</span>
@@ -765,12 +773,16 @@
           </ul>
         </li>
         <li>
-          <strong>Update 1 Line in Your <code>.yml</code> Workflow File</strong>
-          <p>Replace <code>${{ secrets.GITHUB_TOKEN }}</code> with <code>${{ secrets.GH_PAT }}</code>:</p>
+          <strong>Update Your <code>.yml</code> Workflow File</strong>
+          <p>Use <code>${{ secrets.GH_PAT }}</code> and pass <code>--private</code> (or switch <em>Workflow Scope</em> to <strong>Public + Private (PAT)</strong> in the Studio to generate it automatically). Use <code>--public</code> if you want public contributions only:</p>
           <div class="code-terminal-block pat-snippet-block">
             <pre><code>      - name: Generate Animated Heatmap Cards
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}</code></pre>
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          curl -sSL -O https://raw.githubusercontent.com/arhylsion/ghgraph/main/ghgraph.py
+          python3 ghgraph.py --card --username ${{ github.repository_owner }} --theme both --private --output assets/
+          rm -f ghgraph.py</code></pre>
             <button class="terminal-copy-btn" aria-label="Copy PAT yaml snippet" title="Copy to clipboard">
               <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -785,6 +797,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

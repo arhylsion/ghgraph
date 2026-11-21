@@ -14,6 +14,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #121113;
   --bg-surface: #1a181c;
   --bg-container: #211e23;
@@ -48,6 +49,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #fbf8fc;
   --bg-surface: #ffffff;
   --bg-container: #f5eff7;
@@ -1130,21 +1132,42 @@ pre::-webkit-scrollbar-thumb:hover,
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.45);
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
 }
 
-.studio-modal-card::-webkit-scrollbar {
+.studio-modal-card::-webkit-scrollbar,
+.workflow-info-card::-webkit-scrollbar,
+.tos-card::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
-.studio-modal-card::-webkit-scrollbar-track {
+.studio-modal-card::-webkit-scrollbar-track,
+.workflow-info-card::-webkit-scrollbar-track,
+.tos-card::-webkit-scrollbar-track {
   background: transparent;
+  margin: 10px 0;
 }
 
-.studio-modal-card::-webkit-scrollbar-thumb {
-  background: var(--border);
+.studio-modal-card::-webkit-scrollbar-thumb,
+.workflow-info-card::-webkit-scrollbar-thumb,
+.tos-card::-webkit-scrollbar-thumb {
+  background-color: var(--accent-container);
   border-radius: var(--radius-full);
+}
+
+.studio-modal-card::-webkit-scrollbar-thumb:hover,
+.workflow-info-card::-webkit-scrollbar-thumb:hover,
+.tos-card::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .studio-modal-card,
+  .workflow-info-card,
+  .tos-card {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-container) transparent;
+  }
 }
 
 .studio-modal-header {
@@ -1223,7 +1246,8 @@ pre::-webkit-scrollbar-thumb:hover,
   grid-column: 1 / -1;
 }
 
-.studio-controls-bar[hidden] {
+.studio-controls-bar[hidden],
+.studio-group[hidden] {
   display: none !important;
 }
 
